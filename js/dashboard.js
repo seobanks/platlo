@@ -961,9 +961,6 @@ function printEnquiriesReport() {
   printWindow.document.close();
 }
 
-  printWindow.document.close();
-}
-
 // ==========================================================================
 // 5. CSV BULK UPLOAD CONTROLLER
 // ==========================================================================
