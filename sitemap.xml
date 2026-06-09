@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Home Landing Page -->
+  <url>
+    <loc>https://platlo.com/index.html</loc>
+    <lastmod>2026-06-08</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.00</priority>
+  </url>
+  <!-- Search Directory -->
+  <url>
+    <loc>https://platlo.com/properties.html</loc>
+    <lastmod>2026-06-08</lastmod>
+    <changefreq>always</changefreq>
+    <priority>0.90</priority>
+  </url>
+  <!-- Post Property -->
+  <url>
+    <loc>https://platlo.com/post-property.html</loc>
+    <lastmod>2026-06-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+  </url>
+  <!-- Note: Individual property pages are indexed dynamically on-load and crawled via search index links -->
+</urlset>

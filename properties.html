@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- SEO Meta Tags -->
+  <title>Search Properties - PLATLO Zero Brokerage</title>
+  <meta name="description" content="Browse apartments, villas, plots, and offices for rent or sale. Filter by budget, BHK, furnishing, and locality with zero brokerage fee. Direct owner listings.">
+  
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://platlo.com/properties.html">
+
+  <!-- PWA Web Manifest -->
+  <link rel="manifest" href="./manifest.json">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/components.css">
+  <style>
+    .search-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 30px;
+      margin-top: calc(var(--header-height) + 30px);
+      margin-bottom: 60px;
+    }
+    
+    .filters-sidebar {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      position: sticky;
+      top: calc(var(--header-height) + 20px);
+      height: calc(100vh - var(--header-height) - 40px);
+      overflow-y: auto;
+    }
+    
+    .filter-section {
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .filter-section:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+      margin-bottom: 0;
+    }
+    
+    .filter-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      color: var(--text-secondary);
+    }
+    
+    .checkbox-label input {
+      accent-color: var(--primary);
+      width: 16px;
+      height: 16px;
+    }
+    
+    .search-header-bar {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 24px;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    
+    .bar-field {
+      flex: 1;
+      min-width: 180px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
+    .bar-field label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    
+    @media (max-width: 992px) {
+      .search-layout {
+        grid-template-columns: 1fr;
+      }
+      .filters-sidebar {
+        position: static;
+        height: auto;
+      }
+    }
+  </style>
+
+  <!-- Supabase CDN Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <!-- Navigation Header Placeholder -->
+  <header id="header-placeholder"></header>
+
+  <div class="container" style="margin-top: 30px;">
+    <!-- Visual Breadcrumbs -->
+    <div class="breadcrumbs" id="search-breadcrumbs" style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 20px; display: flex; gap: 6px; align-items: center;">
+      <a href="./index.html" style="color: var(--primary); text-decoration: none; font-weight: 600;">Home</a>
+      <span>/</span>
+      <span style="color: var(--text-muted);" id="search-breadcrumb-current">Properties in Uttar Pradesh</span>
+    </div>
+
+    <div class="search-layout">
+      
+      <!-- 1. ADVANCED FILTERS SIDEBAR -->
+      <aside class="filters-sidebar">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h3 style="font-size: 18px;">Filters</h3>
+          <button onclick="resetFilters()" style="background: none; border: none; color: var(--primary); font-weight: 600; font-size: 13px; cursor: pointer;">Reset All</button>
+        </div>
+
+        <!-- Listing Type -->
+        <div class="filter-section">
+          <div class="filter-title">Listing Type</div>
+          <div class="btn-group-toggle" style="grid-template-columns: 1fr 1fr;">
+            <button class="toggle-btn active" id="filter-type-sell" onclick="setFilterType('sell')">For Sale</button>
+            <button class="toggle-btn" id="filter-type-rent" onclick="setFilterType('rent')">For Rent</button>
+          </div>
+        </div>
+
+        <!-- Property Types -->
+        <div class="filter-section">
+          <div class="filter-title">Property Type</div>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" class="filter-prop-type" value="apartment" checked> Apartment
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" class="filter-prop-type" value="house" checked> Villa/House
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" class="filter-prop-type" value="plot" checked> Plot/Land
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" class="filter-prop-type" value="commercial" checked> Commercial
+            </label>
+          </div>
+        </div>
+
+        <!-- BHK Configuration -->
+        <div class="filter-section">
+          <div class="filter-title">Bedrooms (BHK)</div>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" class="filter-bhk" value="1"> 1 BHK
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" class="filter-bhk" value="2"> 2 BHK
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" class="filter-bhk" value="3" checked> 3 BHK
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" class="filter-bhk" value="4"> 4+ BHK
+            </label>
+          </div>
+        </div>
+
+        <!-- Budget Range -->
+        <div class="filter-section">
+          <div class="filter-title">Budget Range</div>
+          <div style="display: flex; gap: 8px;">
+            <input type="number" id="filter-price-min" class="form-control" placeholder="Min" style="padding: 10px;">
+            <input type="number" id="filter-price-max" class="form-control" placeholder="Max" style="padding: 10px;">
+          </div>
+        </div>
+
+        <!-- Furnishing -->
+        <div class="filter-section">
+          <div class="filter-title">Furnishing</div>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" class="filter-furnishing" value="unfurnished"> Unfurnished
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" class="filter-furnishing" value="semi-furnished"> Semi-Furnished
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" class="filter-furnishing" value="fully-furnished"> Fully-Furnished
+            </label>
+          </div>
+        </div>
+
+        <!-- Parking -->
+        <div class="filter-section">
+          <div class="filter-title">Parking</div>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" class="filter-parking" value="car"> Car Parking
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" class="filter-parking" value="bike"> Bike Parking
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" class="filter-parking" value="both"> Both
+            </label>
+          </div>
+        </div>
+      </aside>
+
+      <!-- 2. SEARCH BAR & PROPERTY LISTINGS GRID -->
+      <main>
+        <!-- Horizontal Search Bar -->
+        <div class="search-header-bar">
+          <div class="bar-field" style="max-width: 180px;">
+            <label for="search-city">City</label>
+            <select id="search-city" class="form-control" style="padding: 10px;" onchange="updateLocalityTags(); applyFilters();">
+              <option value="Orai" selected>Orai</option>
+              <option value="Jalaun">Jalaun</option>
+              <option value="Kalpi">Kalpi</option>
+              <option value="Konch">Konch</option>
+              <option value="Jhansi">Jhansi</option>
+              <option value="Lucknow">Lucknow</option>
+              <option value="Kanpur">Kanpur</option>
+              <option value="Noida">Noida</option>
+              <option value="Ghaziabad">Ghaziabad</option>
+              <option value="Agra">Agra</option>
+              <option value="Varanasi">Varanasi</option>
+              <option value="Prayagraj">Prayagraj</option>
+              <option value="Meerut">Meerut</option>
+              <option value="Bareilly">Bareilly</option>
+              <option value="Gorakhpur">Gorakhpur</option>
+              <option value="Aligarh">Aligarh</option>
+              <option value="Moradabad">Moradabad</option>
+              <option value="Saharanpur">Saharanpur</option>
+              <option value="Ayodhya">Ayodhya</option>
+              <option value="Mathura">Mathura</option>
+            </select>
+          </div>
+          
+          <div class="bar-field" style="flex: 2;">
+            <label for="search-locality">Locality or Society Name</label>
+            <input type="text" id="search-locality" class="form-control" placeholder="e.g. Patel Nagar, Tulsi Nagar" style="padding: 10px;" oninput="applyFilters()">
+          </div>
+
+          <button onclick="applyFilters()" class="btn btn-primary" style="height: 42px; margin-top: 17px; padding: 0 20px;">Search</button>
+          <button onclick="toggleHeatmap(true)" class="btn btn-secondary" style="height: 42px; margin-top: 17px; padding: 0 16px; display: flex; align-items: center; gap: 6px; font-weight: 700;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Locality Heatmap
+          </button>
+          <button onclick="toggleLocalityCompare(true)" class="btn btn-secondary" style="height: 42px; margin-top: 17px; padding: 0 16px; display: flex; align-items: center; gap: 6px; font-weight: 700;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><circle cx="12" cy="12" r="3"/><path d="M21 3L14.5 9.5"/><path d="M3 21l6.5-6.5"/></svg>
+            Compare Localities
+          </button>
+        </div>
+
+        <!-- AI Natural Language Search Prompt -->
+        <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(16, 185, 129, 0.05)); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 16px 20px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="display: flex; align-items: center; justify-content: center; background: var(--primary); color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 11px; font-weight: bold;">AI</span>
+              <strong style="font-size: 13.5px; color: var(--text-primary);">Natural Language AI Smart Search</strong>
+            </div>
+            <span style="font-size: 11px; color: var(--text-muted); font-weight: 500;">Type normal sentences to filter instantly</span>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <input type="text" id="ai-smart-search-input" class="form-control" placeholder="e.g. '3 BHK house for rent in Patel Nagar under 12k' or 'plots in Jail Road'" style="padding: 10px; font-size: 13px; border-color: rgba(99, 102, 241, 0.3);" onkeypress="if(event.key === 'Enter') applyAISmartSearch()">
+            <button onclick="applyAISmartSearch()" class="btn btn-primary" style="display: flex; align-items: center; gap: 6px; padding: 0 20px; height: 38px; font-size: 13px;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.886L4.202 9l5.886 1.912L12 16.798l1.912-5.886L19.798 9l-5.886-1.912L12 3Z"/></svg>
+              Apply Filter
+            </button>
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; font-size: 11px; margin-top: 2px;">
+            <span style="color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Suggestions:</span>
+            <button onclick="fillAISmartSearch('2 BHK house for rent in Tulsi Nagar')" style="background:none; border:none; color:var(--primary); cursor:pointer; font-weight:600; padding:0;">"2 BHK rent in Tulsi Nagar"</button>
+            <span style="color: var(--border-color);">|</span>
+            <button onclick="fillAISmartSearch('plots for sale in Jail Road')" style="background:none; border:none; color:var(--primary); cursor:pointer; font-weight:600; padding:0;">"plots in Jail Road"</button>
+            <span style="color: var(--border-color);">|</span>
+            <button onclick="fillAISmartSearch('shop in Bajaria under 40 Lakhs')" style="background:none; border:none; color:var(--primary); cursor:pointer; font-weight:600; padding:0;">"shop in Bajaria under 40 Lakhs"</button>
+          </div>
+        </div>
+
+        <!-- Quick Locality Tags -->
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 24px; margin-top: -12px; padding: 0 4px;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Popular:</span>
+          <div id="quick-locality-tags" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
+        </div>
+
+        <!-- Result Info and Sorting -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <div id="results-count" style="font-weight: 600; color: var(--text-primary);">
+              Showing listings...
+            </div>
+            <div class="view-mode-toggle" style="display: flex; gap: 4px; background: var(--bg-secondary); border: 1px solid var(--border-color); padding: 4px; border-radius: var(--radius-sm);">
+              <button id="view-mode-list" class="btn btn-primary btn-sm" onclick="switchViewMode('list')" style="font-size: 11.5px; padding: 4px 10px; border-radius: var(--radius-xs); border: none; font-weight: 700;">List View</button>
+              <button id="view-mode-map" class="btn btn-secondary btn-sm" onclick="switchViewMode('map')" style="font-size: 11.5px; padding: 4px 10px; border-radius: var(--radius-xs); background: none; border: none; color: var(--text-muted); font-weight: 700;">Map View</button>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 13px; color: var(--text-muted); font-weight: 600;">Sort By:</span>
+            <select id="search-sort" class="form-control" style="width: auto; padding: 6px 12px; font-size: 13px;" onchange="applyFilters()">
+              <option value="newest">Newest Listings</option>
+              <option value="price_low">Price: Low to High</option>
+              <option value="price_high">Price: High to Low</option>
+              <option value="popular">Most Viewed</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Draggable Map Search Viewport -->
+        <div id="properties-map-container" style="display: none; height: 500px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-lg); position: relative; overflow: hidden; margin-bottom: 30px; cursor: grab; user-select: none;">
+          <div id="map-search-pane" style="position: absolute; width: 1500px; height: 1500px; top: -500px; left: -450px; background-color: var(--bg-tertiary); transition: transform 0.1s ease-out; transform-origin: center;">
+            <!-- Vector Grid Background drawing dynamically -->
+            <div id="map-vector-canvas" style="position: absolute; width: 100%; height: 100%;"></div>
+            <!-- Dynamic pins container -->
+            <div id="map-pins-container" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0;"></div>
+          </div>
+          <!-- Zoom & Reset controls -->
+          <div style="position: absolute; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 10;">
+            <button class="map-control-btn" onclick="zoomMap(1.2)" style="width:36px; height:36px; border-radius:var(--radius-sm); background:var(--bg-primary); border:1px solid var(--border-color); color:var(--text-primary); font-size:18px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center;">+</button>
+            <button class="map-control-btn" onclick="zoomMap(0.8)" style="width:36px; height:36px; border-radius:var(--radius-sm); background:var(--bg-primary); border:1px solid var(--border-color); color:var(--text-primary); font-size:18px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center;">-</button>
+            <button class="map-control-btn" onclick="resetMapTransform()" style="width:36px; height:36px; border-radius:var(--radius-sm); background:var(--bg-primary); border:1px solid var(--border-color); color:var(--text-primary); font-size:11px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center;">Reset</button>
+          </div>
+          <!-- Floating glassmorphic preview card tooltip -->
+          <div id="map-property-tooltip" class="glass" style="position: absolute; bottom: 20px; left: 20px; z-index: 10; display: none; padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-color); width: 260px; pointer-events: auto;"></div>
+        </div>
+
+        <!-- Listings Grid -->
+        <div class="properties-grid" id="properties-results-container">
+          <div style="text-align: center; grid-column: 1/-1; padding: 80px 0; color: var(--text-muted);">
+            Searching listings database...
+          </div>
+        </div>
+
+        <!-- FAQ Section for Search Directory -->
+        <div style="margin-top: 50px; border-top: 1px solid var(--border-color); padding-top: 40px; display: none;" id="search-faq-section">
+          <h3 style="font-size: 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Frequently Asked Questions
+          </h3>
+          <div class="faq-container" style="display: flex; flex-direction: column; gap: 12px;" id="search-faq-accordion-box">
+            <!-- Dynamically populated via JS -->
+          </div>
+        </div>
+      </main>
+      
+    </div>
+  </div>
+
+  <!-- Locality Heatmap Modal Overlay -->
+  <div id="heatmap-modal-overlay" class="modal-overlay" style="z-index: 1100;">
+    <div class="modal-content" style="max-width: 950px; width: 95%; padding: 24px; border-radius: var(--radius-lg); background: var(--bg-primary); border: 1px solid var(--border-color); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+      <button class="modal-close" onclick="toggleHeatmap(false)">&times;</button>
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 20px; flex-shrink: 0;">
+        <div>
+          <h3 id="heatmap-title" style="font-size: 22px; margin: 0; color: var(--text-primary); font-family: 'Outfit', sans-serif; font-weight: 800;">Hyperlocal Neighborhood Heatmap</h3>
+          <p style="font-size: 13px; color: var(--text-muted); margin: 4px 0 0 0;">Visual guide to investment growth, safety index, and walkability scores</p>
+        </div>
+      </div>
+      
+      <div class="heatmap-modal-grid" style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 20px; flex: 1; min-height: 0; overflow: hidden;">
+        <!-- SVG Map Area -->
+        <div class="heatmap-map-container" style="position: relative; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100%; min-height: 340px;">
+          <!-- Floating Layers Control -->
+          <div style="position: absolute; top: 12px; left: 12px; display: flex; gap: 4px; z-index: 10; background: var(--bg-primary); padding: 4px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+            <button id="layer-btn-appreciation" onclick="switchHeatmapLayer('appreciation')" class="btn btn-primary btn-sm" style="font-size: 10.5px; padding: 4px 10px; border-radius: var(--radius-xs); border: none; font-weight: 700;">Appreciation Rate</button>
+            <button id="layer-btn-safety" onclick="switchHeatmapLayer('safety')" class="btn btn-secondary btn-sm" style="font-size: 10.5px; padding: 4px 10px; border-radius: var(--radius-xs); background: none; border: none; color: var(--text-muted); font-weight: 700;">Safety Index</button>
+            <button id="layer-btn-walkability" onclick="switchHeatmapLayer('walkability')" class="btn btn-secondary btn-sm" style="font-size: 10.5px; padding: 4px 10px; border-radius: var(--radius-xs); background: none; border: none; color: var(--text-muted); font-weight: 700;">Walkability</button>
+          </div>
+          
+          <!-- Floating Legend -->
+          <div id="heatmap-legend" style="position: absolute; bottom: 12px; right: 12px; z-index: 10; background: var(--bg-primary); padding: 6px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); font-size: 10px; font-weight: 700; color: var(--text-secondary); display: flex; align-items: center; gap: 8px; box-shadow: var(--shadow-sm);">
+            <span style="color: #f59e0b;">Low</span>
+            <div style="width: 80px; height: 8px; border-radius: var(--radius-full); background: linear-gradient(to right, #f59e0b 0%, #10b981 100%);"></div>
+            <span style="color: #10b981;">High</span>
+          </div>
+          
+          <!-- SVG element container -->
+          <div id="svg-map-wrapper" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 20px;"></div>
+        </div>
+        
+        <!-- Info Details Panel -->
+        <div class="heatmap-detail-panel" style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; display: flex; flex-direction: column; justify-content: space-between; overflow-y: auto;">
+          <div>
+            <span style="font-size: 11px; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.8px;">Neighborhood Analytics</span>
+            <h4 id="heatmap-zone-name" style="font-size: 20px; margin: 8px 0 16px 0; color: var(--text-primary); font-weight: 700;">Select a Locality</h4>
+            
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                <span style="font-size: 13.5px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px;">
+                  📈 Appreciation Rate (YoY)
+                </span>
+                <strong id="heatmap-stat-appreciation" style="font-size: 14.5px; color: var(--text-primary);">--</strong>
+              </div>
+              
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                <span style="font-size: 13.5px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px;">
+                  🛡️ Crime Safety Index
+                </span>
+                <strong id="heatmap-stat-safety" style="font-size: 14.5px; color: var(--text-primary);">--</strong>
+              </div>
+              
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                <span style="font-size: 13.5px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px;">
+                  🚶 Walkability Score
+                </span>
+                <strong id="heatmap-stat-walkability" style="font-size: 14.5px; color: var(--text-primary);">--</strong>
+              </div>
+            </div>
+            
+            <div id="heatmap-zone-description" style="font-size: 12.5px; color: var(--text-muted); line-height: 1.5; margin-top: 20px; padding: 12px; background: var(--bg-tertiary); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+              Select any neighborhood on the vector map to analyze price trends and safety analytics before searching properties.
+            </div>
+          </div>
+          
+          <button id="heatmap-explore-btn" class="btn btn-primary" style="width: 100%; margin-top: 24px; font-weight: 700;" disabled onclick="exploreSelectedHeatmapZone()">
+            Search Properties in Locality
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Broker Flagging Report Modal Overlay -->
+  <div id="report-modal-overlay" class="modal-overlay" style="z-index: 1100;">
+    <div class="modal-content" style="max-width: 480px; width: 95%; padding: 24px; border-radius: var(--radius-lg); background: var(--bg-primary); border: 1px solid var(--border-color); position: relative;">
+      <button class="modal-close" onclick="closeReportModal()">&times;</button>
+      <h3 style="font-size: 20px; margin: 0 0 10px 0; color: #ef4444; display: flex; align-items: center; gap: 8px; font-weight: 800; font-family: 'Outfit', sans-serif;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+        Report Listing
+      </h3>
+      <p style="font-size: 13.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px;">
+        Flag broker posts disguised as owners or duplicate listings. PLATLO uses automated pattern checking to audit duplicate owner phone numbers.
+      </p>
+      
+      <form id="report-listing-form" onsubmit="handleReportSubmit(event)">
+        <input type="hidden" id="report-property-id" value="">
+        
+        <div class="form-group">
+          <label for="report-reason" style="font-weight: 700; font-size: 13px;">Reason for Reporting</label>
+          <select id="report-reason" class="form-control" required style="padding: 10px;">
+            <option value="" disabled selected>Select a reason</option>
+            <option value="broker">Hidden Broker / Agent (Disguised as Owner)</option>
+            <option value="duplicate">Duplicate Listing / Fake Information</option>
+            <option value="invalid_phone">Invalid / Incorrect Contact Details</option>
+            <option value="sold">Property already Sold / Rented</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="report-comments" style="font-weight: 700; font-size: 13px;">Additional Comments</label>
+          <textarea id="report-comments" class="form-control" rows="3" placeholder="Explain the issue (e.g. they asked for brokerage fees on call)" style="resize: none; font-family: inherit; padding: 10px;"></textarea>
+        </div>
+        
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+          <button type="button" class="btn btn-secondary" onclick="closeReportModal()" style="font-weight: 600;">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="background-color: #ef4444; border-color: #ef4444; color: white; font-weight: 700;">Submit Report</button>
+        </div>
+      </form>
+  <!-- Locality Compare Modal Overlay -->
+  <div id="locality-compare-modal-overlay" class="modal-overlay" style="z-index: 1100;">
+    <div class="modal-content" style="max-width: 900px; width: 95%; padding: 24px; border-radius: var(--radius-lg); background: var(--bg-primary); border: 1px solid var(--border-color); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+      <button class="modal-close" onclick="toggleLocalityCompare(false)">&times;</button>
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 20px; flex-shrink: 0; flex-wrap: wrap; gap: 12px; text-align: left;">
+        <div>
+          <h3 style="font-size: 22px; margin: 0; color: var(--text-primary); font-family: 'Outfit', sans-serif; font-weight: 800;">Locality Comparison Dashboard</h3>
+          <p style="font-size: 13px; color: var(--text-muted); margin: 4px 0 0 0;">Compare appreciation trends, safety ratings, and walkability side-by-side</p>
+        </div>
+        <!-- Selector Dropdowns -->
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <select id="compare-select-city" class="form-control" style="width: 120px; padding: 8px; height: 38px; font-size: 13px;" onchange="switchCompareCity()">
+            <!-- Populated via JS -->
+          </select>
+          <select id="compare-select-loc-a" class="form-control" style="width: 150px; padding: 8px; height: 38px; font-size: 13px;" onchange="renderLocalityCompare()">
+            <!-- Populated via JS -->
+          </select>
+          <span style="font-weight: 700; color: var(--primary); font-size: 14px;">VS</span>
+          <select id="compare-select-loc-b" class="form-control" style="width: 150px; padding: 8px; height: 38px; font-size: 13px;" onchange="renderLocalityCompare()">
+            <!-- Populated via JS -->
+          </select>
+        </div>
+      </div>
+      
+      <!-- Dashboard comparison panels -->
+      <div id="locality-compare-content" class="compare-modal-grid" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; flex: 1; min-height: 0; overflow-y: auto; padding-right: 4px; text-align: left;">
+        <!-- Graphs & Metrics Panel -->
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+          <!-- SVG Comparative Price Trend Chart -->
+          <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 18px;">
+            <h4 style="font-size: 13px; margin: 0 0 12px 0; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 800;">Appreciation Trend (Capital Value ₹/sq.ft)</h4>
+            <div id="compare-chart-wrapper" style="height: 180px; display: flex; align-items: center; justify-content: center;"></div>
+          </div>
+          <!-- Bar Metrics Comparisons -->
+          <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 18px; display: flex; flex-direction: column; gap: 14px;">
+            <h4 style="font-size: 13px; margin: 0 0 4px 0; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 800;">Core Indices Comparison</h4>
+            <!-- Metric 1: Safety -->
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; margin-bottom:4px;">
+                <span>🛡️ Safety Rating</span>
+                <span id="compare-val-safety-a" style="color: var(--primary);">--</span>
+                <span style="color: var(--text-muted); font-weight: normal; font-size: 10px;">vs</span>
+                <span id="compare-val-safety-b" style="color: var(--accent);">--</span>
+              </div>
+              <div style="height: 6px; border-radius: var(--radius-full); background: var(--bg-tertiary); overflow: hidden; display: flex;">
+                <div id="compare-bar-safety-a" style="height:100%; background: var(--primary); transition: width 0.4s; width: 0%;"></div>
+                <div id="compare-bar-safety-b" style="height:100%; background: var(--accent); transition: width 0.4s; width: 0%;"></div>
+              </div>
+            </div>
+            <!-- Metric 2: Walkability -->
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; margin-bottom:4px;">
+                <span>🚶 Walkability index</span>
+                <span id="compare-val-walk-a" style="color: var(--primary);">--</span>
+                <span style="color: var(--text-muted); font-weight: normal; font-size: 10px;">vs</span>
+                <span id="compare-val-walk-b" style="color: var(--accent);">--</span>
+              </div>
+              <div style="height: 6px; border-radius: var(--radius-full); background: var(--bg-tertiary); overflow: hidden; display: flex;">
+                <div id="compare-bar-walk-a" style="height:100%; background: var(--primary); transition: width 0.4s; width: 0%;"></div>
+                <div id="compare-bar-walk-b" style="height:100%; background: var(--accent); transition: width 0.4s; width: 0%;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Info scorecard comparison -->
+        <div style="display: flex; flex-direction: column; gap: 20px; justify-content: space-between;">
+          <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 18px; display: flex; flex-direction: column; gap: 14px;">
+            <h4 style="font-size: 13px; margin: 0; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 800;">Infrastructure Counts</h4>
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+              <thead>
+                <tr style="border-bottom: 1px solid var(--border-color); text-align: left;">
+                  <th style="padding: 6px 0; color: var(--text-muted);">Metric</th>
+                  <th id="compare-th-loc-a" style="padding: 6px; color: var(--primary); font-weight: 700; text-align: right;">Locality A</th>
+                  <th id="compare-th-loc-b" style="padding: 6px; color: var(--accent); font-weight: 700; text-align: right;">Locality B</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="padding: 8px 0; color: var(--text-secondary);">Avg Price / Sq.Ft</td>
+                  <td id="compare-price-a" style="padding: 8px; font-weight:700; text-align: right;">--</td>
+                  <td id="compare-price-b" style="padding: 8px; font-weight:700; text-align: right;">--</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: var(--text-secondary);">Schools Count</td>
+                  <td id="compare-schools-a" style="padding: 8px; font-weight:700; text-align: right;">--</td>
+                  <td id="compare-schools-b" style="padding: 8px; font-weight:700; text-align: right;">--</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: var(--text-secondary);">Hospitals Count</td>
+                  <td id="compare-hospitals-a" style="padding: 8px; font-weight:700; text-align: right;">--</td>
+                  <td id="compare-hospitals-b" style="padding: 8px; font-weight:700; text-align: right;">--</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: var(--text-secondary);">Active Listings</td>
+                  <td id="compare-listings-a" style="padding: 8px; font-weight:700; text-align: right;">--</td>
+                  <td id="compare-listings-b" style="padding: 8px; font-weight:700; text-align: right;">--</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Visual SEO Text Block -->
+          <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(236, 72, 153, 0.05)); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 18px;">
+            <h4 style="font-size: 12px; margin: 0 0 8px 0; color: var(--primary); text-transform: uppercase; letter-spacing: 0.8px; font-weight: 800;">Visual SEO Locality Verdict</h4>
+            <div id="compare-verdict-text" style="font-size: 12.5px; color: var(--text-secondary); line-height: 1.6;">
+              Select two localities to view comparison analytics and structured investment reviews.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Footer Placeholder -->
+  <footer id="footer-placeholder"></footer>
+
+  <!-- PLATLO Core Scripts -->
+  <script src="./js/config.js"></script>
+  <script src="./js/app.js"></script>
+  <script src="./js/properties.js"></script>
+</body>
+</html>

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- SEO Meta Tags -->
+  <title>Post Property Free - Zero Brokerage | PLATLO</title>
+  <meta name="description" content="Post your property for rent or sale for free on PLATLO. Direct connections, no broker fee, instant Google Search SEO optimization.">
+  
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://platlo.com/post-property.html">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/components.css">
+  <style>
+    .posting-layout {
+      display: grid;
+      grid-template-columns: 1.3fr 0.7fr;
+      gap: 40px;
+      margin-top: calc(var(--header-height) + 30px);
+      margin-bottom: 80px;
+    }
+    
+    .wizard-card {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 40px;
+      box-shadow: var(--shadow-md);
+    }
+    
+    .wizard-step {
+      display: none;
+    }
+    
+    .wizard-step.active {
+      display: block;
+    }
+    
+    .wizard-progress {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 40px;
+      position: relative;
+    }
+    
+    .wizard-progress::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background-color: var(--border-color);
+      z-index: 1;
+      transform: translateY(-50%);
+    }
+    
+    .progress-bar-fill {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      height: 2px;
+      background-color: var(--primary);
+      z-index: 2;
+      transform: translateY(-50%);
+      width: 0%;
+      transition: var(--transition);
+    }
+    
+    .progress-node {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-full);
+      background-color: var(--bg-secondary);
+      border: 2px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--text-muted);
+      position: relative;
+      z-index: 3;
+      transition: var(--transition-fast);
+    }
+    
+    .progress-node.active {
+      border-color: var(--primary);
+      color: var(--primary);
+      box-shadow: 0 0 0 4px var(--primary-light);
+    }
+    
+    .progress-node.completed {
+      background-color: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+    
+    .wizard-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+      border-top: 1px solid var(--border-color);
+      padding-top: 20px;
+    }
+    
+    .live-seo-preview-sidebar {
+      position: sticky;
+      top: calc(var(--header-height) + 20px);
+    }
+    
+    @media (max-width: 992px) {
+      .posting-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+
+  <!-- Supabase CDN Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <!-- Navigation Header Placeholder -->
+  <header id="header-placeholder"></header>
+
+  <div class="container" style="margin-top: 30px;">
+    
+    <div class="posting-layout">
+      
+      <!-- LEFT COLUMN: MULTI-STEP POSTING WIZARD -->
+      <main class="wizard-card">
+        
+        <!-- Step Indicators -->
+        <div class="wizard-progress">
+          <div class="progress-bar-fill" id="wizard-progress-bar"></div>
+          <div class="progress-node active" id="node-1">1</div>
+          <div class="progress-node" id="node-2">2</div>
+          <div class="progress-node" id="node-3">3</div>
+          <div class="progress-node" id="node-4">4</div>
+        </div>
+
+        <form id="property-posting-form" onsubmit="event.preventDefault();">
+          
+          <!-- STEP 1: TRANSACTION TYPE & PROPERTY TYPE -->
+          <div class="wizard-step active" id="step-1">
+            <h2 style="font-size: 24px; margin-bottom: 24px;">Let's start with the basics</h2>
+            
+            <!-- AI Fast-Paste Auto-Fill Box -->
+            <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.04), rgba(16, 185, 129, 0.04)); border: 1px dashed var(--primary); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 30px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 6px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="display: flex; align-items: center; justify-content: center; background: var(--primary); color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 11px; font-weight: bold;">AI</span>
+                  <strong style="font-size: 14px; color: var(--text-primary);">AI WhatsApp / Text forward Auto-Fill</strong>
+                </div>
+                <span style="font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Zero Effort Posting</span>
+              </div>
+              <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">Have a rough property details draft or WhatsApp text? Paste it below to automatically populate the wizard stages!</p>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <textarea id="ai-paste-input" class="form-control" rows="2" placeholder="e.g. 'I want to rent out my 2 BHK semi-furnished house in Tulsi Nagar Orai for 7500 per month. Carpet area is 1100 sq ft, ground floor, bike parking, contact Rahul 9898977777.'" style="font-size: 12.5px; resize: none;"></textarea>
+                <button type="button" onclick="applyAIPasteAutofill()" class="btn btn-primary btn-sm" style="align-self: flex-end; display: flex; align-items: center; gap: 6px; padding: 10px 16px;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.886L4.202 9l5.886 1.912L12 16.798l1.912-5.886L19.798 9l-5.886-1.912L12 3Z"/></svg>
+                  Parse & Auto-Fill Form
+                </button>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label>I want to...</label>
+              <div class="btn-group-toggle" style="grid-template-columns: 1fr 1fr; max-width: 320px;">
+                <button type="button" class="toggle-btn active" id="btn-post-sell" onclick="setPostListingType('sell')">Sell Property</button>
+                <button type="button" class="toggle-btn" id="btn-post-rent" onclick="setPostListingType('rent')">Rent Out</button>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 30px;">
+              <label>Select Property Type</label>
+              <div class="btn-group-toggle" style="grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));">
+                <button type="button" class="toggle-btn active" id="type-apartment" onclick="setPostPropertyType('apartment')">Apartment</button>
+                <button type="button" class="toggle-btn" id="type-house" onclick="setPostPropertyType('house')">Villa / House</button>
+                <button type="button" class="toggle-btn" id="type-plot" onclick="setPostPropertyType('plot')">Plot / Land</button>
+                <button type="button" class="toggle-btn" id="type-commercial" onclick="setPostPropertyType('commercial')">Commercial</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 2: LOCATION DETAILS -->
+          <div class="wizard-step" id="step-2">
+            <h2 style="font-size: 24px; margin-bottom: 24px;">Where is your property located?</h2>
+            
+            <div class="form-group">
+              <label for="post-city">Select City</label>
+              <select id="post-city" class="form-control" onchange="updateSEOPreview()" required>
+                <option value="Orai" selected>Orai</option>
+                <option value="Jalaun">Jalaun</option>
+                <option value="Kalpi">Kalpi</option>
+                <option value="Konch">Konch</option>
+                <option value="Jhansi">Jhansi</option>
+                <option value="Lucknow">Lucknow</option>
+                <option value="Kanpur">Kanpur</option>
+                <option value="Noida">Noida</option>
+                <option value="Ghaziabad">Ghaziabad</option>
+                <option value="Agra">Agra</option>
+                <option value="Varanasi">Varanasi</option>
+                <option value="Prayagraj">Prayagraj</option>
+                <option value="Meerut">Meerut</option>
+                <option value="Bareilly">Bareilly</option>
+                <option value="Gorakhpur">Gorakhpur</option>
+                <option value="Aligarh">Aligarh</option>
+                <option value="Moradabad">Moradabad</option>
+                <option value="Saharanpur">Saharanpur</option>
+                <option value="Ayodhya">Ayodhya</option>
+                <option value="Mathura">Mathura</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="post-locality">Locality / Area Name</label>
+              <input type="text" id="post-locality" class="form-control" placeholder="e.g. Patel Nagar, Tulsi Nagar" oninput="updateSEOPreview()" required>
+            </div>
+
+            <div class="form-group">
+              <label for="post-society">Society / Project Name</label>
+              <input type="text" id="post-society" class="form-control" placeholder="e.g. Sharda Colony, Bajaria Market" oninput="updateSEOPreview()" required>
+            </div>
+
+            <div class="form-group">
+              <label for="post-address">Exact Building Address</label>
+              <input type="text" id="post-address" class="form-control" placeholder="e.g. Flat 405, Block B, Main Road" required>
+            </div>
+          </div>
+
+          <!-- STEP 3: PROPERTY SPECIFICATIONS & PRICING -->
+          <div class="wizard-step" id="step-3">
+            <h2 style="font-size: 24px; margin-bottom: 24px;">Provide property configurations</h2>
+            
+            <div class="form-group" id="grp-bhk-toggle">
+              <label>Bedrooms (BHK)</label>
+              <div class="btn-group-toggle" style="max-width: 320px;">
+                <button type="button" class="toggle-btn" onclick="setPostBhk(1)">1 BHK</button>
+                <button type="button" class="toggle-btn active" onclick="setPostBhk(2)">2 BHK</button>
+                <button type="button" class="toggle-btn" onclick="setPostBhk(3)">3 BHK</button>
+                <button type="button" class="toggle-btn" onclick="setPostBhk(4)">4+ BHK</button>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+              <div class="form-group">
+                <label for="post-bathrooms">Bathrooms</label>
+                <input type="number" id="post-bathrooms" class="form-control" min="0" value="2" required>
+              </div>
+              <div class="form-group">
+                <label for="post-area">Carpet Area (Sq.Ft)</label>
+                <input type="number" id="post-area" class="form-control" placeholder="e.g. 1200" oninput="updateSEOPreview()" required>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+              <div class="form-group">
+                <label for="post-floor">Floor</label>
+                <input type="number" id="post-floor" class="form-control" min="0" value="3" required>
+              </div>
+              <div class="form-group">
+                <label for="post-total-floors">Total Floors in Building</label>
+                <input type="number" id="post-total-floors" class="form-control" min="1" value="5" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Furnishing Status</label>
+              <div class="btn-group-toggle" style="grid-template-columns: repeat(3, 1fr);">
+                <button type="button" class="toggle-btn" id="furnish-un" onclick="setPostFurnishing('unfurnished')">Unfurnished</button>
+                <button type="button" class="toggle-btn active" id="furnish-semi" onclick="setPostFurnishing('semi-furnished')">Semi-Furnished</button>
+                <button type="button" class="toggle-btn" id="furnish-fully" onclick="setPostFurnishing('fully-furnished')">Fully Furnished</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Parking Availability</label>
+              <div class="btn-group-toggle" style="grid-template-columns: repeat(4, 1fr);">
+                <button type="button" class="toggle-btn" id="park-none" onclick="setPostParking('none')">None</button>
+                <button type="button" class="toggle-btn" id="park-bike" onclick="setPostParking('bike')">Bike</button>
+                <button type="button" class="toggle-btn active" id="park-car" onclick="setPostParking('car')">Car</button>
+                <button type="button" class="toggle-btn" id="park-both" onclick="setPostParking('both')">Both</button>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 30px;">
+              <label for="post-price" id="label-post-price">Expected Price (₹)</label>
+              <input type="number" id="post-price" class="form-control" placeholder="e.g. 7500000" oninput="updateSEOPreview()" required>
+            </div>
+          </div>
+
+          <!-- STEP 4: IMAGES, CONTACTS, AND DESCRIPTION -->
+          <div class="wizard-step" id="step-4">
+            <h2 style="font-size: 24px; margin-bottom: 24px;">Final touch & photos</h2>
+            
+            <div class="form-group">
+              <label>Property Description</label>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 12px; color: var(--text-muted);">Write a listing summary or use AI writer</span>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="generateAIDescription()" style="padding: 4px 10px; font-size: 11px;">✨ Auto Write Description</button>
+              </div>
+              <textarea id="post-description" class="form-control" rows="5" placeholder="Provide features like orientation, landmark, specific fixtures, water access..." oninput="updateSEOPreview()" required></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Property Media Upload</label>
+              <div class="upload-area" onclick="triggerFileUpload()" id="dropzone">
+                <div class="upload-icon">↑</div>
+                <h4 style="font-size: 14px;">Drag & Drop files or click to upload</h4>
+                <p style="font-size: 12px; color: var(--text-muted);">Supports PNG, JPG (Max 5MB). Simulated upload tags will be applied.</p>
+              </div>
+              <input type="file" id="file-uploader" style="display: none;" multiple accept="image/*" onchange="handleFileSelect(event)">
+              <div class="image-preview-grid" id="preview-container">
+                <!-- Preview elements rendered in JS -->
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; border-top: 1px solid var(--border-color); padding-top: 24px; margin-top: 30px;">
+              <div class="form-group">
+                <label for="post-contact-name">Contact Owner Name</label>
+                <input type="text" id="post-contact-name" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label for="post-contact-phone">Owner Phone Number</label>
+                <input type="text" id="post-contact-phone" placeholder="+91 XXXXX XXXXX" class="form-control" required>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="post-contact-email">Owner Email (Optional)</label>
+              <input type="email" id="post-contact-email" class="form-control">
+            </div>
+          </div>
+
+          <!-- WIZARD CONTROLS -->
+          <div class="wizard-nav">
+            <button type="button" class="btn btn-secondary" id="btn-wizard-prev" onclick="moveStep(-1)" style="visibility: hidden;">Previous Step</button>
+            <button type="button" class="btn btn-primary" id="btn-wizard-next" onclick="moveStep(1)">Next Step</button>
+          </div>
+
+        </form>
+
+      </main>
+
+      <!-- RIGHT COLUMN: DYNAMIC SEO SEARCH SNIPPET PREVIEW -->
+      <aside class="live-seo-preview-sidebar">
+        <div class="seo-preview-card">
+          <div class="seo-preview-header">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            Google Search SEO Preview
+          </div>
+          <p style="font-size: 13px; line-height: 1.5; color: var(--text-muted); margin-bottom: 20px;">
+            This is exactly how your listing will appear to millions of buyers on search engines like Google. PLATLO automatically indexes details for maximum SEO performance.
+          </p>
+          
+          <!-- Google Result Box -->
+          <div class="seo-google-box">
+            <div class="google-url-line">
+              https://platlo.com <span>› property.html?id=...</span>
+            </div>
+            <div class="google-title-line" id="seo-preview-title">
+              2 BHK House for Sale in Orai | PLATLO
+            </div>
+            <div class="google-desc-line" id="seo-preview-desc">
+              List your property details on PLATLO. Every listing is automatically formatted for top Google Search indexing with zero brokerage fees.
+            </div>
+          </div>
+        </div>
+
+        <div class="glass" style="padding: 24px; border-radius: var(--radius-md); border: 1px solid var(--border-color); font-size: 13px; line-height: 1.6;">
+          <h4 style="color: var(--primary); margin-bottom: 10px; font-size: 15px;">🚀 Free Auto-SEO Indexing</h4>
+          <p>By posting on PLATLO, your property becomes structured data indexable by Google. We construct rich structured schema schemas (JSON-LD) which can output pricing details, bedroom configuration, and location metadata directly in Google search boxes!</p>
+        </div>
+      </aside>
+
+    </div>
+
+  </div>
+
+  <!-- Navigation Footer Placeholder -->
+  <footer id="footer-placeholder"></footer>
+
+  <!-- PLATLO Core Scripts -->
+  <script src="./js/config.js"></script>
+  <script src="./js/app.js"></script>
+  <script src="./js/post.js"></script>
+</body>
+</html>

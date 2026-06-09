@@ -1,0 +1,18 @@
+{
+  "name": "PLATLO Zero Brokerage Properties",
+  "short_name": "PLATLO",
+  "description": "Direct peer-to-peer property listing and discovery platform in Uttar Pradesh.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#6366f1",
+  "icons": [
+    {
+      "src": "images/hero_bg.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}

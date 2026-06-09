@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- SEO Meta Tags -->
+  <title>PLATLO - Zero Brokerage Property Posting & Discovery Platform</title>
+  <meta name="description" content="PLATLO is India's premium zero brokerage real estate platform. Buy, sell, or rent apartments, villas, plots, and offices directly from owners. Post listings for free with smart auto-SEO.">
+  <meta name="keywords" content="real estate, zero brokerage, flat rent, buy house, property posting, owner listings, Orai, Jalaun, Uttar Pradesh, Kalpi, Konch, Jhansi">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://platlo.com/">
+  <meta property="og:title" content="PLATLO - Zero Brokerage Property Posting & Discovery Platform">
+  <meta property="og:description" content="Buy, sell, or rent apartments, villas, plots, and offices directly from owners. Post listings for free with smart auto-SEO.">
+  <meta property="og:image" content="./images/hero_bg.jpg">
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://platlo.com/index.html">
+
+  <!-- PWA Web Manifest -->
+  <link rel="manifest" href="./manifest.json">
+
+  <!-- JSON-LD Structured Data Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://platlo.com/#website",
+        "url": "https://platlo.com/",
+        "name": "PLATLO",
+        "description": "Zero Brokerage Real Estate Posting & Discovery Platform in Orai, Jalaun UP",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://platlo.com/properties.html?locality={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@type": "Organization",
+        "@id": "https://platlo.com/#organization",
+        "name": "PLATLO",
+        "url": "https://platlo.com/",
+        "logo": "https://platlo.com/images/hero_bg.jpg",
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "telephone": "+91-98765-43210",
+          "contactType": "customer service",
+          "areaServed": "IN",
+          "availableLanguage": "English"
+        }
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://platlo.com/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How do I post a property listing on PLATLO?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Posting is extremely easy. Click on 'Post Property' in the header navigation, fill in basic property specifications (such as location, BHK, size, and price), select images, and click submit. Our built-in AI assistant can even write a customized description for you instantly."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Are there any brokerage fees on PLATLO?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No! PLATLO is a 100% zero-brokerage platform. We connect buyers and renters directly with property owners, saving you lakhs in middleman commission fees."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does the PropWorth Valuation tool estimate property value?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The PropWorth tool calculates estimated market ranges by analyzing baseline property costs per square foot in Orai and other parts of the Jalaun district. It compares your input area, configurations, and transaction type to provide a fair market price benchmark."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/components.css">
+  
+  <!-- Supabase CDN Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <!-- Navigation Header Placeholder -->
+  <header id="header-placeholder"></header>
+
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <img src="./images/hero_bg.jpg" class="hero-bg" alt="Luxury Penthouse View">
+    <div class="hero-overlay"></div>
+    <div class="container">
+      <div class="hero-content">
+        <span class="hero-tagline">100% Direct Connections</span>
+        <h1 class="hero-title">Find Your Perfect Space <br><span>Zero Brokerage.</span></h1>
+        <p class="hero-desc">India's modern real estate platform connecting buyers and tenants directly with property owners. Fast, verified, and completely transparent.</p>
+        
+        <div style="display: flex; gap: 24px; margin-top: 20px;">
+          <div style="text-align: center;">
+            <h3 style="font-size: 32px; color: var(--primary);">25k+</h3>
+            <p style="font-size: 13px; color: #cbd5e1;">Properties Listed</p>
+          </div>
+          <div style="border-right: 1px solid rgba(255, 255, 255, 0.15);"></div>
+          <div style="text-align: center;">
+            <h3 style="font-size: 32px; color: var(--primary);">12k+</h3>
+            <p style="font-size: 13px; color: #cbd5e1;">Brokerage Free Deals</p>
+          </div>
+          <div style="border-right: 1px solid rgba(255, 255, 255, 0.15);"></div>
+          <div style="text-align: center;">
+            <h3 style="font-size: 32px; color: var(--primary);">4.8★</h3>
+            <p style="font-size: 13px; color: #cbd5e1;">User Rating</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero Search Widget -->
+      <div class="search-widget glass">
+        <div class="search-tabs">
+          <button class="tab-btn active" id="search-tab-buy" onclick="setSearchType('sell')">Buy</button>
+          <button class="tab-btn" id="search-tab-rent" onclick="setSearchType('rent')">Rent</button>
+        </div>
+        <form class="search-form" onsubmit="handleHeroSearch(event)">
+          <div class="search-field">
+            <label>City Location</label>
+            <div class="search-input-wrapper">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              <select id="hero-search-city" required>
+                <option value="Orai" selected>Orai</option>
+                <option value="Jalaun">Jalaun</option>
+                <option value="Kalpi">Kalpi</option>
+                <option value="Konch">Konch</option>
+                <option value="Jhansi">Jhansi</option>
+                <option value="Lucknow">Lucknow</option>
+                <option value="Kanpur">Kanpur</option>
+                <option value="Noida">Noida</option>
+                <option value="Ghaziabad">Ghaziabad</option>
+                <option value="Agra">Agra</option>
+                <option value="Varanasi">Varanasi</option>
+                <option value="Prayagraj">Prayagraj</option>
+                <option value="Meerut">Meerut</option>
+                <option value="Bareilly">Bareilly</option>
+                <option value="Gorakhpur">Gorakhpur</option>
+                <option value="Aligarh">Aligarh</option>
+                <option value="Moradabad">Moradabad</option>
+                <option value="Saharanpur">Saharanpur</option>
+                <option value="Ayodhya">Ayodhya</option>
+                <option value="Mathura">Mathura</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="search-field">
+            <label>Search Locality or Society</label>
+            <div class="search-input-wrapper">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="text" id="hero-search-locality" placeholder="e.g. Indiranagar, Carter Road">
+            </div>
+          </div>
+
+          <div class="search-row">
+            <div class="search-field">
+              <label>Property Type</label>
+              <div class="search-input-wrapper">
+                <svg style="left:12px" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <select id="hero-search-property-type" style="padding-left: 36px;">
+                  <option value="any">Any Type</option>
+                  <option value="apartment">Apartment</option>
+                  <option value="house">Villa/House</option>
+                  <option value="plot">Plot/Land</option>
+                  <option value="commercial">Commercial</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="search-field">
+              <label>Max Budget</label>
+              <div class="search-input-wrapper">
+                <svg style="left:12px" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <select id="hero-search-budget" style="padding-left: 36px;">
+                  <option value="any">Any Budget</option>
+                  <option value="50000">Under ₹50k</option>
+                  <option value="100000">Under ₹1L</option>
+                  <option value="5000000">Under ₹50L</option>
+                  <option value="15000000">Under ₹1.5 Cr</option>
+                  <option value="50000000">Under ₹5 Cr</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-accent btn-lg" style="width: 100%; margin-top: 10px;">Search Properties</button>
+        </form>
+        
+        <!-- AI Natural Language Search Prompt -->
+        <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px; justify-content: center;">
+            <span style="font-size: 10px; font-weight: 700; color: #818cf8; background: rgba(129, 140, 248, 0.15); padding: 2px 6px; border-radius: var(--radius-sm); border: 1px solid rgba(129, 140, 248, 0.3);">AI SEARCH</span>
+            <span style="font-size: 12px; color: #94a3b8; font-weight: 500;">Search Jalaun/Orai using normal language:</span>
+          </div>
+          <form onsubmit="handleAISearchPrompt(event)" style="display: flex; gap: 8px;">
+            <input type="text" id="hero-ai-prompt" class="form-control" placeholder="e.g. '2 BHK flat for rent in Patel Nagar under 9000'" style="padding: 10px; font-size: 13px; background: rgba(15, 23, 42, 0.4); border-color: rgba(129, 140, 248, 0.3); color: white;" required>
+            <button type="submit" class="btn btn-primary btn-sm" style="padding: 0 16px; font-size: 12px; display: flex; align-items: center; gap: 4px;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.886L4.202 9l5.886 1.912L12 16.798l1.912-5.886L19.798 9l-5.886-1.912L12 3Z"/></svg>
+              Go
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPLORE POPULAR LOCALITIES IN UP CITIES -->
+  <section class="section" style="background-color: var(--bg-secondary);">
+    <div class="container">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <h2 style="font-size: 36px;">Explore Top Localities</h2>
+        <p style="color: var(--text-muted); margin-top: 10px;">Direct owner listings in popular residential and commercial hubs across Uttar Pradesh</p>
+      </div>
+
+      <!-- City Tabs Selection -->
+      <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 35px; flex-wrap: wrap;">
+        <button class="tab-btn active" id="initial-locality-tab-btn" onclick="switchLocalityCity('Lucknow', this)" style="border-radius: var(--radius-full); padding: 8px 24px; font-size: 13px; font-weight: 600; cursor: pointer;">Lucknow</button>
+        <button class="tab-btn" onclick="switchLocalityCity('Noida', this)" style="border-radius: var(--radius-full); padding: 8px 24px; font-size: 13px; font-weight: 600; cursor: pointer;">Noida</button>
+        <button class="tab-btn" onclick="switchLocalityCity('Varanasi', this)" style="border-radius: var(--radius-full); padding: 8px 24px; font-size: 13px; font-weight: 600; cursor: pointer;">Varanasi</button>
+        <button class="tab-btn" onclick="switchLocalityCity('Jhansi', this)" style="border-radius: var(--radius-full); padding: 8px 24px; font-size: 13px; font-weight: 600; cursor: pointer;">Jhansi</button>
+        <button class="tab-btn" onclick="switchLocalityCity('Orai', this)" style="border-radius: var(--radius-full); padding: 8px 24px; font-size: 13px; font-weight: 600; cursor: pointer;">Orai</button>
+      </div>
+      
+      <div id="featured-localities-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px;">
+        <!-- Dynamically Populated -->
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURED PROPERTIES SECTION -->
+  <section class="section">
+    <div class="container">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 50px; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <h2 style="font-size: 36px;">Featured Properties</h2>
+          <p style="color: var(--text-muted); margin-top: 10px;">Handpicked direct-owner listings offering the best values</p>
+        </div>
+        <a href="./properties.html" class="btn btn-secondary">View All Properties</a>
+      </div>
+
+      <div class="properties-grid" id="featured-properties-container">
+        <!-- Rendered Dynamically in JS -->
+        <div style="text-align: center; grid-column: 1/-1; padding: 40px; color: var(--text-muted);">
+          Loading properties...
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROPWORTH ESTIMATOR SECTION -->
+  <section class="section" style="background-color: var(--bg-tertiary);">
+    <div class="container" style="max-width: 900px; margin: 0 auto;">
+      <div style="text-align: center; margin-bottom: 40px;">
+        <span class="hero-tagline" style="margin-bottom: 12px;">Automated Price Check</span>
+        <h2 style="font-size: 36px;">PropWorth Pricing Estimator</h2>
+        <p style="color: var(--text-muted); margin-top: 10px;">Get a direct instant market benchmark price for buying or renting in seconds.</p>
+      </div>
+
+      <div class="glass" style="background-color: var(--bg-secondary); border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 40px; box-shadow: var(--shadow-lg);">
+        <form onsubmit="estimatePropWorth(event)" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label for="worth-city">City</label>
+            <select id="worth-city" class="form-control" style="padding: 12px;" required>
+              <option value="Orai" selected>Orai</option>
+              <option value="Jalaun">Jalaun</option>
+              <option value="Kalpi">Kalpi</option>
+              <option value="Konch">Konch</option>
+              <option value="Jhansi">Jhansi</option>
+              <option value="Lucknow">Lucknow</option>
+              <option value="Kanpur">Kanpur</option>
+              <option value="Noida">Noida</option>
+              <option value="Ghaziabad">Ghaziabad</option>
+              <option value="Agra">Agra</option>
+              <option value="Varanasi">Varanasi</option>
+              <option value="Prayagraj">Prayagraj</option>
+              <option value="Meerut">Meerut</option>
+              <option value="Bareilly">Bareilly</option>
+              <option value="Gorakhpur">Gorakhpur</option>
+              <option value="Aligarh">Aligarh</option>
+              <option value="Moradabad">Moradabad</option>
+              <option value="Saharanpur">Saharanpur</option>
+              <option value="Ayodhya">Ayodhya</option>
+              <option value="Mathura">Mathura</option>
+            </select>
+          </div>
+          
+          <div class="form-group" style="margin-bottom:0;">
+            <label for="worth-type">Transaction Type</label>
+            <select id="worth-type" class="form-control" style="padding: 12px;" required>
+              <option value="sell">Buy / Sell Value</option>
+              <option value="rent">Monthly Rent</option>
+            </select>
+          </div>
+          
+          <div class="form-group" style="margin-bottom:0;">
+            <label for="worth-bhk">Configuration</label>
+            <select id="worth-bhk" class="form-control" style="padding: 12px;" required>
+              <option value="1">1 BHK Apartment</option>
+              <option value="2" selected>2 BHK Apartment</option>
+              <option value="3">3 BHK Apartment</option>
+              <option value="4">4 BHK Villa</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-bottom:0;">
+            <label for="worth-area">Carpet Area (sq ft)</label>
+            <input type="number" id="worth-area" class="form-control" style="padding: 12px;" placeholder="e.g. 1200" value="1200" required>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="grid-column: 1/-1; height: 50px; font-size: 16px; font-weight: 700; margin-top: 10px;">Estimate Worth Now</button>
+        </form>
+
+        <!-- Result Box -->
+        <div id="worth-result-box" style="display: none; margin-top: 30px; padding-top: 30px; border-top: 1px solid var(--border-color); text-align: center;">
+          <h4 style="font-size: 14px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">ESTIMATED MARKET VALUE RANGE</h4>
+          <div style="font-size: 36px; font-weight: 800; color: var(--primary); font-family: 'Outfit'; margin: 12px 0 6px;" id="worth-estimated-range">₹0 - ₹0</div>
+          <p style="font-size: 13px; color: var(--text-muted);" id="worth-estimated-desc">Calculated average for selected properties.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY CHOOSE PLATLO SECTION -->
+  <section class="section" style="background-color: var(--bg-secondary);">
+    <div class="container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;">
+      <div>
+        <span class="hero-tagline" style="margin-bottom: 16px;">Direct & Transparent</span>
+        <h2 style="font-size: 40px; margin-bottom: 24px;">Rethinking Indian Real Estate</h2>
+        <p style="line-height: 1.7; margin-bottom: 30px;">PLATLO eliminates mediators and simplifies property listing and discovery. Whether you are an owner looking to lease out an apartment, or a buyer finding a home, we make transactions secure, simple, and direct.</p>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+          <div>
+            <h4 style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+              <span style="color: var(--primary); font-size: 20px;">✓</span> Zero Brokerage
+            </h4>
+            <p style="font-size: 13px; line-height: 1.5;">Deals happen directly. Save up to lakhs in broker fees.</p>
+          </div>
+          <div>
+            <h4 style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+              <span style="color: var(--primary); font-size: 20px;">✓</span> 1-Click Posting
+            </h4>
+            <p style="font-size: 13px; line-height: 1.5;">List your property in under a minute with auto description.</p>
+          </div>
+          <div>
+            <h4 style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+              <span style="color: var(--primary); font-size: 20px;">✓</span> Auto SEO Boost
+            </h4>
+            <p style="font-size: 13px; line-height: 1.5;">Every listing is automatically formatted for search engine discovery.</p>
+          </div>
+          <div>
+            <h4 style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+              <span style="color: var(--primary); font-size: 20px;">✓</span> PropWorth Valuation
+            </h4>
+            <p style="font-size: 13px; line-height: 1.5;">Instant AI-based benchmark pricing before listing.</p>
+          </div>
+        </div>
+      </div>
+      <div style="position: relative;">
+        <img src="./images/property_3.jpg" style="border-radius: var(--radius-lg); box-shadow: var(--shadow-premium);" alt="Modern Exterior Villa">
+        <div class="glass" style="position: absolute; bottom: -30px; left: -30px; padding: 24px; border-radius: var(--radius-md); max-width: 240px; box-shadow: var(--shadow-lg);">
+          <h4 style="color: var(--primary); font-size: 32px; font-weight: 800; font-family: 'Outfit';">100%</h4>
+          <p style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-top: 4px;">Verified Direct Listings. No Spam Calls.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS SECTION -->
+  <section class="section">
+    <div class="container">
+      <div style="text-align: center; margin-bottom: 60px;">
+        <h2 style="font-size: 36px;">What Our Users Say</h2>
+        <p style="color: var(--text-muted); margin-top: 10px;">Trusted by thousands of owners and home seekers</p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+        <!-- Testimonial 1 -->
+        <div class="glass" style="padding: 30px; border-radius: var(--radius-md); border: 1px solid var(--border-color); background-color: var(--bg-secondary);">
+          <div style="color: var(--warning); margin-bottom: 16px;">★★★★★</div>
+          <p style="line-height: 1.6; font-style: italic; margin-bottom: 20px;">"I was skeptical about finding a tenant without brokerage. I posted my 3 BHK house in Patel Nagar on PLATLO. Within 48 hours, I had three genuine requests, and sealed the deal in 4 days! The automated description generator was incredibly helpful."</p>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 40px; height: 40px; border-radius: var(--radius-full); background-color: var(--secondary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">KS</div>
+            <div>
+              <h4 style="font-size: 15px;">Karthik Sundaram</h4>
+              <span style="font-size: 12px; color: var(--text-muted);">Property Owner, Orai</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Testimonial 2 -->
+        <div class="glass" style="padding: 30px; border-radius: var(--radius-md); border: 1px solid var(--border-color); background-color: var(--bg-secondary);">
+          <div style="color: var(--warning); margin-bottom: 16px;">★★★★★</div>
+          <p style="line-height: 1.6; font-style: italic; margin-bottom: 20px;">"Finding a flat in Tulsi Nagar without paying massive brokerage is nearly impossible. PLATLO connected me directly with Aisha, the owner. We finalized everything transparently. The built-in EMI & budget tools made comparing options so clear."</p>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 40px; height: 40px; border-radius: var(--radius-full); background-color: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">MP</div>
+            <div>
+              <h4 style="font-size: 15px;">Megha Pathak</h4>
+              <span style="font-size: 12px; color: var(--text-muted);">Tenant, Orai</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ SECTION -->
+  <section class="section" style="background-color: var(--bg-tertiary); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); padding: 60px 0;">
+    <div class="container">
+      <div style="text-align: center; margin-bottom: 50px;">
+        <h2 style="font-size: 32px; font-weight: 800; font-family: 'Outfit', sans-serif;">Frequently Asked Questions</h2>
+        <p style="color: var(--text-muted); margin-top: 10px;">Find answers to common questions about buying, renting, and listing properties on PLATLO</p>
+      </div>
+
+      <div style="max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px;" id="homepage-faq-box">
+        <!-- Dynamically populated via JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Navigation Footer Placeholder -->
+  <footer id="footer-placeholder"></footer>
+
+  <!-- PLATLO Core Scripts -->
+  <script src="./js/config.js"></script>
+  <script src="./js/app.js"></script>
+  
+  <!-- Page Specific Inline Script -->
+  <script>
+    let activeListingType = "sell"; // 'sell' by default
+    
+    function setSearchType(type) {
+      activeListingType = type;
+      document.getElementById("search-tab-buy").classList.toggle("active", type === "sell");
+      document.getElementById("search-tab-rent").classList.toggle("active", type === "rent");
+    }
+
+    function handleHeroSearch(event) {
+      event.preventDefault();
+      const city = document.getElementById("hero-search-city").value;
+      const locality = document.getElementById("hero-search-locality").value;
+      const propertyType = document.getElementById("hero-search-property-type").value;
+      const budget = document.getElementById("hero-search-budget").value;
+
+      let searchUrl = `./properties.html?type=${activeListingType}&city=${encodeURIComponent(city)}`;
+      if (locality) searchUrl += `&locality=${encodeURIComponent(locality)}`;
+      if (propertyType !== "any") searchUrl += `&prop_type=${propertyType}`;
+      if (budget !== "any") searchUrl += `&budget=${budget}`;
+
+      window.location.href = searchUrl;
+    }
+
+    function handleAISearchPrompt(event) {
+      event.preventDefault();
+      const prompt = document.getElementById("hero-ai-prompt").value.trim();
+      if (!prompt) return;
+      window.location.href = `./properties.html?ai_query=${encodeURIComponent(prompt)}`;
+    }
+
+    // PropWorth standalone estimator logic
+    function estimatePropWorth(event) {
+      event.preventDefault();
+      const city = document.getElementById("worth-city").value;
+      const isRent = document.getElementById("worth-type").value === "rent";
+      const bhk = parseInt(document.getElementById("worth-bhk").value);
+      const area = parseFloat(document.getElementById("worth-area").value);
+
+      const cityBaselines = {
+        "Jhansi": 4000,
+        "Orai": 2500,
+        "Jalaun": 1800,
+        "Kalpi": 2000,
+        "Konch": 1700,
+        "Lucknow": 4500,
+        "Kanpur": 4000,
+        "Noida": 6500,
+        "Ghaziabad": 5000,
+        "Agra": 3800,
+        "Varanasi": 4200,
+        "Prayagraj": 3800,
+        "Meerut": 3500,
+        "Bareilly": 2800,
+        "Gorakhpur": 3000,
+        "Aligarh": 2800,
+        "Moradabad": 2600,
+        "Saharanpur": 2500,
+        "Ayodhya": 4500,
+        "Mathura": 3500
+      };
+
+      const baselinePrice = cityBaselines[city] || 6000;
+      let finalPrice = baselinePrice * area;
+      
+      if (isRent) {
+        finalPrice = finalPrice * 0.0035;
+        finalPrice = finalPrice * (1 + (bhk - 2) * 0.1);
+        const minVal = Math.round(finalPrice * 0.9 / 500) * 500;
+        const maxVal = Math.round(finalPrice * 1.1 / 500) * 500;
+        document.getElementById("worth-estimated-range").textContent = `₹${minVal.toLocaleString('en-IN')} - ₹${maxVal.toLocaleString('en-IN')} / month`;
+        document.getElementById("worth-estimated-desc").textContent = `Estimated direct rent range for a ${bhk} BHK property of ${area} sq.ft in ${city} based on local baseline averages.`;
+      } else {
+        finalPrice = finalPrice * (1 + (bhk - 2) * 0.15);
+        const minVal = Math.round(finalPrice * 0.95 / 100000) * 100000;
+        const maxVal = Math.round(finalPrice * 1.05 / 100000) * 100000;
+
+        const formatCrL = (val) => {
+          return val >= 10000000 ? `${(val/10000000).toFixed(2)} Cr` : `${(val/100000).toFixed(2)} L`;
+        };
+
+        document.getElementById("worth-estimated-range").textContent = `₹${formatCrL(minVal)} - ₹${formatCrL(maxVal)}`;
+        document.getElementById("worth-estimated-desc").textContent = `Estimated direct purchase range for a ${bhk} BHK property of ${area} sq.ft in ${city} (approx. ₹${Math.round(finalPrice/area).toLocaleString('en-IN')} per sq.ft).`;
+      }
+
+      document.getElementById("worth-result-box").style.display = "block";
+    }
+
+    // Dynamic Featured Listings Loading
+    async function loadFeaturedProperties() {
+      const container = document.getElementById("featured-properties-container");
+      if (!container) return;
+
+      let properties = [];
+
+      if (window.PLATLO.isMock) {
+        // Retrieve from localStorage database
+        properties = window.PLATLO_DB.getProperties().slice(0, 3);
+      } else {
+        // Query from Supabase
+        try {
+          const { data, error } = await window.PLATLO.supabase
+            .from("properties")
+            .select("*")
+            .eq("status", "active")
+            .order("created_at", { ascending: false })
+            .limit(3);
+          
+          if (error) throw error;
+          properties = data || [];
+        } catch (err) {
+          console.error("Failed to query properties from Supabase, loading fallback mock.", err);
+          properties = window.PLATLO_DB.getProperties().slice(0, 3);
+        }
+      }
+
+      if (properties.length === 0) {
+        container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding: 40px; color: var(--text-muted);">No featured properties available. Be the first to list!</div>`;
+        return;
+      }
+
+      container.innerHTML = properties.map(prop => {
+        const isRent = prop.listing_type === "rent";
+        const priceFormatted = isRent 
+          ? `₹${prop.price.toLocaleString('en-IN')}<span class="rent-period">/mo</span>` 
+          : `₹${(prop.price >= 10000000 ? (prop.price/10000000).toFixed(2) + ' Cr' : (prop.price/100000).toFixed(2) + ' L')}`;
+        
+        const typeLabel = prop.property_type.charAt(0).toUpperCase() + prop.property_type.slice(1);
+        const specLabel = prop.bedrooms > 0 ? `${prop.bedrooms} BHK` : `${prop.carpet_area} sq ft`;
+
+        // Calculate PropWorth deal rating
+        const baselines = {
+          "Lucknow": { sell: 5000, rent: 15 },
+          "Noida": { sell: 6500, rent: 20 },
+          "Varanasi": { sell: 4500, rent: 12 },
+          "Jhansi": { sell: 3500, rent: 9 },
+          "Orai": { sell: 2500, rent: 7 },
+          "Jalaun": { sell: 2200, rent: 6 },
+          "Kalpi": { sell: 2000, rent: 5 },
+          "Konch": { sell: 1800, rent: 5 }
+        };
+        const defaultBaseline = { sell: 3000, rent: 10 };
+        const baselineSet = baselines[prop.city] || defaultBaseline;
+        const baselineVal = baselineSet[prop.listing_type] || (prop.listing_type === "rent" ? 10 : 3000);
+        const actualVal = prop.carpet_area ? (prop.price / prop.carpet_area) : baselineVal;
+        const deviation = (actualVal - baselineVal) / baselineVal;
+
+        let worthBadgeHtml = "";
+        if (deviation < -0.12) {
+          worthBadgeHtml = `<span class="badge badge-deal-great">Great Deal</span>`;
+        } else if (deviation > 0.12) {
+          worthBadgeHtml = `<span class="badge badge-deal-premium">Premium</span>`;
+        } else {
+          worthBadgeHtml = `<span class="badge badge-deal-fair">Fair Price</span>`;
+        }
+
+        return `
+          <div class="property-card" onclick="location.href='./property.html?id=${prop.id}'" style="cursor: pointer;">
+            <div class="card-media">
+              <img src="${prop.images[0] || './images/property_1.jpg'}" alt="${prop.title}">
+              <div class="card-badges">
+                <span class="badge badge-owner">Direct Owner</span>
+                ${worthBadgeHtml}
+                <span class="badge badge-verified">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  Verified
+                </span>
+              </div>
+              <div class="card-price-tag">
+                <div class="card-price">${priceFormatted}</div>
+                <div class="card-type">${typeLabel}</div>
+              </div>
+            </div>
+            
+            <div class="card-body">
+              <h3 class="card-title" title="${prop.title}">${prop.title}</h3>
+              <div class="card-location">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span>${prop.locality}, ${prop.city}</span>
+              </div>
+              <div class="card-features">
+                <div class="feature-item">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4v16M2 8h20M2 16h20M22 4v16"/></svg>
+                  <span>${specLabel}</span>
+                </div>
+                <div class="feature-item">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+                  <span>${prop.carpet_area} Sq.Ft</span>
+                </div>
+                <div class="feature-item">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M12 4v16"/></svg>
+                  <span>${prop.furnishing.replace('-furnished', '')}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card-footer">
+              <div class="owner-info">
+                <div class="owner-avatar">${prop.contact_name.charAt(0).toUpperCase()}</div>
+                <span class="owner-name">${prop.contact_name}</span>
+              </div>
+              <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); location.href='./property.html?id=${prop.id}&contact=1'">Contact</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Locality Tab Switcher Data
+    const LOCALITY_DATA = {
+      Lucknow: [
+        { name: "Gomti Nagar", desc: "Premium Residential & IT Hub", img: "./images/property_1.jpg" },
+        { name: "Hazratganj", desc: "Heritage Commercial Center", img: "./images/property_3.jpg" },
+        { name: "Aliganj", desc: "Well-planned Housing Colony", img: "./images/property_2.jpg" },
+        { name: "Indira Nagar", desc: "Massive residential sector", img: "./images/property_4.jpg" }
+      ],
+      Noida: [
+        { name: "Sector 62", desc: "Modern IT Parks & Residential", img: "./images/property_4.jpg" },
+        { name: "Noida Extension", desc: "Fast-growing high-rise hub", img: "./images/property_1.jpg" },
+        { name: "Sector 18", desc: "Major shopping & commercial hub", img: "./images/property_2.jpg" },
+        { name: "Sector 76", desc: "Modern residential society zone", img: "./images/property_3.jpg" }
+      ],
+      Varanasi: [
+        { name: "Assi Ghat", desc: "Cultural & spiritual riverside", img: "./images/property_3.jpg" },
+        { name: "Lanka", desc: "BHU proximity student hub", img: "./images/property_1.jpg" },
+        { name: "Sigra", desc: "Posh residential & shopping", img: "./images/property_2.jpg" },
+        { name: "Cantonment", desc: "Green, elite residential colony", img: "./images/property_4.jpg" }
+      ],
+      Jhansi: [
+        { name: "Civil Lines", desc: "Elite residential bungalows", img: "./images/property_1.jpg" },
+        { name: "Sadar Bazar", desc: "Popular retail & dining hub", img: "./images/property_2.jpg" },
+        { name: "Elite Crossing", desc: "Heart of commercial Jhansi", img: "./images/property_4.jpg" },
+        { name: "Kanpur Road", desc: "Expanding educational sector", img: "./images/property_3.jpg" }
+      ],
+      Orai: [
+        { name: "Patel Nagar", desc: "Posh residential neighborhood", img: "./images/property_1.jpg" },
+        { name: "Tulsi Nagar", desc: "Station connectivity hub", img: "./images/property_2.jpg" },
+        { name: "Jail Road", desc: "Rapidly expanding colonies", img: "./images/property_3.jpg" },
+        { name: "Sharda Nagar", desc: "Developing duplex housing zone", img: "./images/property_4.jpg" }
+      ]
+    };
+
+    function switchLocalityCity(city, btnEl) {
+      const parent = btnEl.parentNode;
+      parent.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      btnEl.classList.add('active');
+
+      const container = document.getElementById("featured-localities-container");
+      if (!container) return;
+
+      const localities = LOCALITY_DATA[city] || [];
+      container.innerHTML = localities.map(loc => `
+        <a href="./properties.html?city=${encodeURIComponent(city)}&locality=${encodeURIComponent(loc.name)}" style="border-radius: var(--radius-md); overflow: hidden; height: 180px; position: relative; display: flex; align-items: flex-end; padding: 20px; box-shadow: var(--shadow-md); text-decoration: none;" class="locality-hover-card">
+          <img src="${loc.img}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6);" alt="${loc.name}">
+          <div style="position: relative; z-index: 10; color: white;">
+            <h4 style="font-size: 18px; font-weight: 700; margin-bottom: 4px; color: white;">${loc.name}</h4>
+            <span style="font-size: 12px; opacity: 0.85; font-weight: 500; color: #e2e8f0;">${loc.desc}</span>
+          </div>
+        </a>
+      `).join('');
+    }
+
+    window.switchLocalityCity = switchLocalityCity;
+
+    // Wait for DB loading inside app.js
+    document.addEventListener("DOMContentLoaded", () => {
+      // Small timeout to allow db state check
+      setTimeout(() => {
+        loadFeaturedProperties();
+        const initialTab = document.getElementById("initial-locality-tab-btn");
+        if (initialTab) switchLocalityCity('Lucknow', initialTab);
+      }, 100);
+    });
+  </script>
+</body>
+</html>

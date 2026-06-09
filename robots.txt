@@ -1,0 +1,11 @@
+# ==========================================================================
+# Robots.txt for PLATLO - Zero Brokerage Real Estate Orai
+# ==========================================================================
+
+User-agent: *
+Allow: /
+Disallow: /dashboard.html
+Disallow: /js/config.js
+
+# Sitemap location
+Sitemap: https://platlo.com/sitemap.xml

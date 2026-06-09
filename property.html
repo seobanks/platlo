@@ -1,0 +1,2840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Dynamic SEO placeholders (Updated in JS) -->
+  <title>Property Details - PLATLO</title>
+  <meta name="description" id="meta-description" content="View detailed specifications, images, pricing, and contact owner directly on PLATLO. Zero brokerage.">
+  
+  <!-- PWA Web Manifest -->
+  <link rel="manifest" href="./manifest.json">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/components.css">
+  <style>
+    .details-layout {
+      display: grid;
+      grid-template-columns: 1.6fr 0.9fr;
+      gap: 40px;
+      margin-top: calc(var(--header-height) + 30px);
+      margin-bottom: 80px;
+    }
+    
+    .gallery-container {
+      position: relative;
+      height: 450px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-bottom: 30px;
+      background-color: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+    }
+    
+    .gallery-slide {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+    
+    .gallery-slide.active {
+      display: block;
+    }
+    
+    .gallery-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      background-color: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      z-index: 10;
+      transition: var(--transition-fast);
+    }
+    
+    .gallery-nav:hover {
+      background-color: var(--primary);
+    }
+    
+    .gallery-prev { left: 20px; }
+    .gallery-next { right: 20px; }
+    
+    .detail-section {
+      background-color: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+      padding: 30px;
+      border: 1px solid var(--border-color);
+      margin-bottom: 30px;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    
+    .detail-title {
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.3;
+    }
+    
+    .detail-price {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--primary);
+      font-family: 'Outfit', sans-serif;
+    }
+    
+    .sticky-sidebar {
+      position: sticky;
+      top: calc(var(--header-height) + 20px);
+    }
+    
+    .amenity-tag {
+      background-color: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      padding: 8px 16px;
+      border-radius: var(--radius-full);
+      font-size: 13px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    @media (max-width: 992px) {
+      .details-layout {
+        grid-template-columns: 1fr;
+      }
+      .gallery-container {
+        height: 320px;
+      }
+    }
+  </style>
+
+  <!-- Supabase CDN Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <!-- Navigation Header Placeholder -->
+  <header id="header-placeholder"></header>
+
+  <div class="container" style="margin-top: 30px;">
+    <!-- Back to Search Link -->
+    <a href="./properties.html" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 600; color: var(--primary); margin-bottom: 20px;">
+      ← Back to Search Results
+    </a>
+
+    <!-- Visual Breadcrumbs -->
+    <div class="breadcrumbs" id="visual-breadcrumbs" style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 20px; display: none; gap: 6px; align-items: center;">
+      <!-- Populated Dynamically -->
+    </div>
+
+    <!-- MAIN GRID CONTAINER -->
+    <div class="details-layout" id="details-main-grid" style="display: none;">
+      
+      <!-- LEFT CONTENT COLUMN -->
+      <section>
+        <!-- Photo Gallery & 3D Tour Containers -->
+        <div class="gallery-container" id="regular-gallery-box">
+          <div id="gallery-slides-container" style="height:100%;">
+            <!-- Images rendered dynamically -->
+          </div>
+          <button class="gallery-nav gallery-prev" onclick="changeSlide(-1)">❮</button>
+          <button class="gallery-nav gallery-next" onclick="changeSlide(1)">❯</button>
+          <button class="btn btn-accent btn-sm" onclick="toggle3DTour(true)" style="position: absolute; bottom: 20px; left: 20px; z-index: 15; font-weight: 700; gap: 4px; box-shadow: var(--shadow-md); border: 1.5px solid white;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4M12 16V8"/></svg>
+            View Interactive 3D Tour
+          </button>
+        </div>
+
+        <div class="panoramic-viewer" id="panoramic-tour-box" style="display: none; margin-bottom: 30px;">
+          <div class="panoramic-bg" id="pano-bg"></div>
+          <!-- Virtual Staging Furniture Container -->
+          <div id="pano-staging-furniture-container" style="position: absolute; top: 0; left: 0; width: 300%; height: 100%; pointer-events: none; overflow: hidden; z-index: 20; transition: transform 0.08s ease-out;"></div>
+          <!-- Interactive Hotspots -->
+          <div id="pano-hotspots-container"></div>
+          <!-- Virtual Staging Controls -->
+          <div class="pano-staging-controls" style="position: absolute; top: 20px; right: 20px; z-index: 40; display: flex; flex-direction: column; gap: 8px; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.15); padding: 12px; border-radius: var(--radius-md); box-shadow: var(--shadow-lg); width: 170px;">
+            <span style="font-size: 11px; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; text-align: left; display: block;">Virtual Staging</span>
+            <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 4px;">
+              <button onclick="setStagingStyle('none')" id="staging-btn-none" class="btn btn-secondary btn-sm active" style="font-size: 10.5px; text-align: left; padding: 4px 8px; justify-content: flex-start; color: white; border: none; background: var(--primary);">Off (Empty Room)</button>
+              <button onclick="setStagingStyle('modern')" id="staging-btn-modern" class="btn btn-secondary btn-sm" style="font-size: 10.5px; text-align: left; padding: 4px 8px; justify-content: flex-start; background: none; border: none; color: var(--text-muted); font-weight: bold;">🛋️ Modern</button>
+              <button onclick="setStagingStyle('classic')" id="staging-btn-classic" class="btn btn-secondary btn-sm" style="font-size: 10.5px; text-align: left; padding: 4px 8px; justify-content: flex-start; background: none; border: none; color: var(--text-muted); font-weight: bold;">🪑 Classic</button>
+              <button onclick="setStagingStyle('minimalist')" id="staging-btn-minimalist" class="btn btn-secondary btn-sm" style="font-size: 10.5px; text-align: left; padding: 4px 8px; justify-content: flex-start; background: none; border: none; color: var(--text-muted); font-weight: bold;">🪴 Minimalist</button>
+            </div>
+          </div>
+          <!-- Compass overlay -->
+          <div class="compass-rose">
+            <div class="compass-rose-inner">
+              <div class="compass-rose-needle" id="compass-needle"></div>
+              <div class="compass-rose-label n">N</div>
+              <div class="compass-rose-label e">E</div>
+              <div class="compass-rose-label s">S</div>
+              <div class="compass-rose-label w">W</div>
+            </div>
+          </div>
+          <!-- Toggle Back button -->
+          <button class="btn btn-primary btn-sm" onclick="toggle3DTour(false)" style="position: absolute; top: 20px; left: 20px; z-index: 40; font-weight: 700; border: 1.5px solid white; box-shadow: var(--shadow-md);">
+            ← Back to Photos
+          </button>
+          <!-- Viewpoint label -->
+          <div style="position: absolute; bottom: 20px; left: 20px; z-index: 40; color: white; background: rgba(0,0,0,0.65); padding: 6px 12px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; border: 1px solid rgba(255,255,255,0.25);" id="pano-viewpoint-label">
+            Entrance Walkway
+          </div>
+        </div>
+
+        <!-- Core Details -->
+        <div class="detail-section">
+          <div class="detail-header">
+            <div style="flex: 1; min-width: 280px;">
+              <div style="display: flex; gap: 8px; margin-bottom: 12px; align-items: center; flex-wrap: wrap;">
+                <span class="badge badge-owner">Direct Owner</span>
+                <span id="detail-worth-badge" class="badge" style="display: none;"></span>
+                <span class="badge badge-verified" style="padding: 4px 10px;">✓ Verified</span>
+                <span class="badge badge-rating" style="padding: 4px 10px; background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.25); display: inline-flex; align-items: center; gap: 4px; border-radius: var(--radius-sm); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
+                  <svg style="fill: currentColor;" xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  <span id="detail-rating-text">4.8 (12 reviews)</span>
+                </span>
+                <span id="detail-type-badge" class="badge badge-sale">For Sale</span>
+              </div>
+              <h1 class="detail-title" id="detail-title">Loading Property Title...</h1>
+              <div class="card-location" style="margin-top: 10px; font-size: 16px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span id="detail-location">Locality, City</span>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div class="detail-price" id="detail-price">₹0</div>
+              <span id="detail-price-sqft" style="font-size: 13px; color: var(--text-muted); font-weight: 600;">₹0 / sq ft</span>
+            </div>
+          </div>
+
+          <!-- Specs Summary Grid -->
+          <div class="specs-grid">
+            <div class="spec-box">
+              <div class="label">Configuration</div>
+              <div class="value" id="spec-bhk">3 BHK</div>
+            </div>
+            <div class="spec-box">
+              <div class="label">Carpet Area</div>
+              <div class="value" id="spec-area">1,800 Sq.Ft</div>
+            </div>
+            <div class="spec-box">
+              <div class="label">Furnishing</div>
+              <div class="value" id="spec-furnishing">Semi-Furnished</div>
+            </div>
+            <div class="spec-box">
+              <div class="label">Parking</div>
+              <div class="value" id="spec-parking">Car & Bike</div>
+            </div>
+            <div class="spec-box">
+              <div class="label">Floor Level</div>
+              <div class="value" id="spec-floor">5 of 12</div>
+            </div>
+            <div class="spec-box">
+              <div class="label">Possession</div>
+              <div class="value" id="spec-possession">Immediate</div>
+            </div>
+            <div class="spec-box">
+              <div class="label">RERA Status</div>
+              <div class="value" id="spec-rera">Verified / Exempt</div>
+            </div>
+          </div>
+
+          <!-- Description Section -->
+          <h3 style="font-size: 20px; border-top: 1px solid var(--border-color); padding-top: 24px; margin-bottom: 16px;">Property Description</h3>
+          <p id="detail-description" style="line-height: 1.7; white-space: pre-line; color: var(--text-secondary);">
+            Loading description...
+          </p>
+        </div>
+
+        <!-- Amenities & Society details -->
+        <div class="detail-section">
+          <h3 style="font-size: 20px; margin-bottom: 20px;">Society & Key Highlights</h3>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
+            <div>
+              <p style="font-size: 13px; color: var(--text-muted); font-weight: 600;">SOCIETY NAME</p>
+              <h4 id="detail-society" style="font-size: 16px; margin-top: 4px;">Society Name</h4>
+            </div>
+            <div>
+              <p style="font-size: 13px; color: var(--text-muted); font-weight: 600;">EXACT ADDRESS</p>
+              <h4 id="detail-address" style="font-size: 16px; margin-top: 4px;">Full Address details</h4>
+            </div>
+          </div>
+          
+          <h4 style="font-size: 15px; margin-bottom: 12px; color: var(--text-primary);">Amenities Offered</h4>
+          <div style="display: flex; flex-wrap: wrap; gap: 10px;" id="amenities-container">
+            <span class="amenity-tag">✓ 24/7 Security</span>
+            <span class="amenity-tag">✓ Power Backup</span>
+            <span class="amenity-tag">✓ Water Supply</span>
+            <span class="amenity-tag">✓ Gym</span>
+            <span class="amenity-tag">✓ Swimming Pool</span>
+            <span class="amenity-tag">✓ Lift Access</span>
+          </div>
+        </div>
+
+        <!-- Locality Score Index -->
+        <div class="detail-section">
+          <h3 style="font-size: 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            Locality Connectivity & Lifestyle Index
+          </h3>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.5;">Neighborhood statistics derived from transit networks, safety indexes, and community review ratings on PLATLO.</p>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+            <!-- Transit Connectivity -->
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">
+                <span>Public Transit & Roads</span>
+                <span id="score-transit">9.2 / 10</span>
+              </div>
+              <div style="height: 8px; border-radius: var(--radius-full); background-color: var(--bg-tertiary); overflow: hidden;">
+                <div id="bar-transit" style="height: 100%; border-radius: var(--radius-full); background-color: var(--primary); width: 92%;"></div>
+              </div>
+            </div>
+
+            <!-- Lifestyle & Retail -->
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">
+                <span>Restaurants, Cafes & Retail</span>
+                <span id="score-lifestyle">9.5 / 10</span>
+              </div>
+              <div style="height: 8px; border-radius: var(--radius-full); background-color: var(--bg-tertiary); overflow: hidden;">
+                <div id="bar-lifestyle" style="height: 100%; border-radius: var(--radius-full); background-color: var(--primary); width: 95%;"></div>
+              </div>
+            </div>
+
+            <!-- Safety Index -->
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">
+                <span>Neighborhood Safety</span>
+                <span id="score-safety">8.8 / 10</span>
+              </div>
+              <div style="height: 8px; border-radius: var(--radius-full); background-color: var(--bg-tertiary); overflow: hidden;">
+                <div id="bar-safety" style="height: 100%; border-radius: var(--radius-full); background-color: var(--primary); width: 88%;"></div>
+              </div>
+            </div>
+
+            <!-- School/Hospital Proximity -->
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">
+                <span>Hospitals & Schools</span>
+                <span id="score-proximity">9.0 / 10</span>
+              </div>
+              <div style="height: 8px; border-radius: var(--radius-full); background-color: var(--bg-tertiary); overflow: hidden;">
+                <div id="bar-proximity" style="height: 100%; border-radius: var(--radius-full); background-color: var(--primary); width: 90%;"></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- AI Location Insights & Map Mock -->
+          <div style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 24px; margin-top: 30px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+              <h3 style="font-size: 18px; display: flex; align-items: center; gap: 8px; margin: 0;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                AI Proximity & Micro-Map
+              </h3>
+              <span style="font-size: 10px; font-weight: 700; color: var(--secondary); background: rgba(99,102,241,0.1); padding: 2px 8px; border-radius: var(--radius-sm); text-transform: uppercase;">Verified Grid</span>
+            </div>
+            
+            <div style="background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; text-align: center; position: relative; overflow: hidden; min-height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+              <!-- Abstract Map Graphics SVG -->
+              <svg style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0.12; pointer-events:none;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <line x1="10" y1="0" x2="10" y2="100" stroke="var(--text-primary)" stroke-width="0.5"/>
+                <line x1="30" y1="0" x2="30" y2="100" stroke="var(--text-primary)" stroke-width="0.5"/>
+                <line x1="50" y1="0" x2="50" y2="100" stroke="var(--text-primary)" stroke-width="0.5"/>
+                <line x1="70" y1="0" x2="70" y2="100" stroke="var(--text-primary)" stroke-width="0.5"/>
+                <line x1="90" y1="0" x2="90" y2="100" stroke="var(--text-primary)" stroke-width="0.5"/>
+                <line x1="0" y1="20" x2="100" y2="20" stroke="var(--text-primary)" stroke-width="0.5"/>
+                <line x1="0" y1="40" x2="100" y2="40" stroke="var(--text-primary)" stroke-width="0.5"/>
+                <line x1="0" y1="60" x2="100" y2="60" stroke="var(--text-primary)" stroke-width="0.5"/>
+                <line x1="0" y1="80" x2="100" y2="80" stroke="var(--text-primary)" stroke-width="0.5"/>
+                <circle cx="50" cy="50" r="14" fill="var(--primary)" opacity="0.25"/>
+              </svg>
+              
+              <!-- Map Marker -->
+              <div style="z-index: 2; display: flex; flex-direction: column; align-items: center; margin-bottom: 15px;">
+                <div style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 4px 15px rgba(13,148,136,0.3); animation: pulse 2s infinite;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                </div>
+                <strong id="proximity-map-locality" style="font-size: 13.5px; margin-top: 8px; color: var(--text-primary);">Patel Nagar, Orai</strong>
+              </div>
+              
+              <!-- Quick Info Grid -->
+              <div style="z-index: 2; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%;">
+                <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); padding: 8px; border-radius: var(--radius-sm); text-align: center;">
+                  <span style="font-size: 9px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">Transit</span>
+                  <div style="font-size: 11px; font-weight: 600; color: var(--text-primary); margin-top: 2px;">Station</div>
+                  <div id="map-time-transit" style="font-size: 10px; color: var(--success); font-weight: 600; margin-top: 2px;">5 mins</div>
+                </div>
+                <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); padding: 8px; border-radius: var(--radius-sm); text-align: center;">
+                  <span style="font-size: 9px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">Hospital</span>
+                  <div style="font-size: 11px; font-weight: 600; color: var(--text-primary); margin-top: 2px;">District Hosp</div>
+                  <div id="map-time-medical" style="font-size: 10px; color: var(--success); font-weight: 600; margin-top: 2px;">7 mins</div>
+                </div>
+                <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); padding: 8px; border-radius: var(--radius-sm); text-align: center;">
+                  <span style="font-size: 9px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">Market</span>
+                  <div style="font-size: 11px; font-weight: 600; color: var(--text-primary); margin-top: 2px;">Main Bazaar</div>
+                  <div id="map-time-education" style="font-size: 10px; color: var(--success); font-weight: 600; margin-top: 2px;">4 mins</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Square Yards Vastu Alignment Compass Section -->
+        <div class="detail-section">
+          <h3 style="font-size: 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+            Vastu Compliance & Orientation
+          </h3>
+          
+          <div style="display: flex; gap: 30px; align-items: center; flex-wrap: wrap;">
+            <div class="vastu-compass-container">
+              <div class="vastu-compass-line"></div>
+              <div class="vastu-compass-line diagonal"></div>
+              <div class="vastu-compass-dir n">N</div>
+              <div class="vastu-compass-dir e">E</div>
+              <div class="vastu-compass-dir s">S</div>
+              <div class="vastu-compass-dir w">W</div>
+              <div class="vastu-compass-dir ne">NE</div>
+              <div class="vastu-compass-dir nw">NW</div>
+              <div class="vastu-compass-dir se">SE</div>
+              <div class="vastu-compass-dir sw">SW</div>
+              
+              <!-- Vastu placements -->
+              <div class="vastu-placement-dot" style="background: #10b981; top: 30px; right: 30px;" title="Entrance: NE (Excellent)" id="vastu-dot-entrance"></div>
+              <div class="vastu-placement-dot" style="background: #10b981; bottom: 30px; left: 30px;" title="Master Bedroom: SW (Excellent)" id="vastu-dot-bedroom"></div>
+              <div class="vastu-placement-dot" style="background: #10b981; bottom: 30px; right: 30px;" title="Kitchen: SE (Good)" id="vastu-dot-kitchen"></div>
+            </div>
+            
+            <div style="flex: 1; min-width: 200px;">
+              <div style="display: flex; align-items: baseline; gap: 8px;">
+                <span style="font-size: 36px; font-weight: 800; color: var(--success); font-family: 'Outfit';" id="vastu-rating-score">8.5</span>
+                <span style="font-size: 16px; font-weight: 700; color: var(--text-muted);">/ 10</span>
+              </div>
+              <div style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin-top: 6px;" id="vastu-rating-text">Vastu Compliant (Excellent Energy flow)</div>
+              <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px; line-height: 1.5;" id="vastu-rating-desc">
+                The primary entrance faces North-East (NE), welcoming positive vibes. The master bedroom is correctly situated in the South-West (SW), and the kitchen aligns in the South-East (SE) fire quadrant. Excellent energy balance.
+              </p>
+              <div id="vastu-back-link" style="display: none; margin-top: 8px;">
+                <button class="btn btn-secondary btn-sm" onclick="resetVastuView()" style="padding: 2px 8px; font-size: 10px; cursor: pointer; border-radius: var(--radius-sm);">
+                  ← Back to Overall Rating
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 99acres Price Trends & Locality Growth Section -->
+        <div class="detail-section">
+          <h3 style="font-size: 20px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Locality Analytics & Price Trends
+          </h3>
+          <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5;">Historical price metrics and rental yield statistics for properties in this region.</p>
+          
+          <div style="display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+            <button class="btn btn-secondary btn-sm active" id="trend-tab-capital" onclick="switchTrendMetric('capital')" style="border-radius: var(--radius-full); cursor: pointer;">Capital Growth (₹/Sq.Ft)</button>
+            <button class="btn btn-secondary btn-sm" id="trend-tab-rent" onclick="switchTrendMetric('rent')" style="border-radius: var(--radius-full); cursor: pointer;">Rental Yield (%)</button>
+          </div>
+          
+          <div style="position: relative; height: 180px; width: 100%;">
+            <svg id="trend-svg" viewBox="0 0 500 150" style="width: 100%; height: 100%; overflow: visible;">
+              <!-- Grid Lines -->
+              <line x1="40" y1="10" x2="480" y2="10" stroke="var(--border-color)" stroke-width="0.5" stroke-dasharray="4"/>
+              <line x1="40" y1="50" x2="480" y2="50" stroke="var(--border-color)" stroke-width="0.5" stroke-dasharray="4"/>
+              <line x1="40" y1="90" x2="480" y2="90" stroke="var(--border-color)" stroke-width="0.5" stroke-dasharray="4"/>
+              <line x1="40" y1="130" x2="480" y2="130" stroke="var(--border-color)" stroke-width="1"/>
+              
+              <!-- Y-axis Labels (Dynamic) -->
+              <text x="10" y="15" font-size="9" fill="var(--text-muted)" font-weight="600" id="trend-y-max">₹6,000</text>
+              <text x="10" y="55" font-size="9" fill="var(--text-muted)" font-weight="600" id="trend-y-mid1">₹4,500</text>
+              <text x="10" y="95" font-size="9" fill="var(--text-muted)" font-weight="600" id="trend-y-mid2">₹3,000</text>
+              <text x="10" y="135" font-size="9" fill="var(--text-muted)" font-weight="600" id="trend-y-min">₹1,500</text>
+              
+              <!-- SVG Path (Trend Line) -->
+              <path id="trend-line" d="M 40 130 L 150 130 L 260 130 L 370 130 L 480 130" class="trend-line"/>
+              
+              <!-- X-axis Labels -->
+              <text x="40" y="148" font-size="9.5" fill="var(--text-muted)" font-weight="600" text-anchor="middle">2022</text>
+              <text x="150" y="148" font-size="9.5" fill="var(--text-muted)" font-weight="600" text-anchor="middle">2023</text>
+              <text x="260" y="148" font-size="9.5" fill="var(--text-muted)" font-weight="600" text-anchor="middle">2024</text>
+              <text x="370" y="148" font-size="9.5" fill="var(--text-muted)" font-weight="600" text-anchor="middle">2025</text>
+              <text x="480" y="148" font-size="9.5" fill="var(--text-muted)" font-weight="600" text-anchor="middle">2026 (Est)</text>
+              
+              <!-- Interactive Dots -->
+              <circle cx="40" cy="130" r="4.5" class="trend-dot" id="dot-0"/>
+              <circle cx="150" cy="130" r="4.5" class="trend-dot" id="dot-1"/>
+              <circle cx="260" cy="130" r="4.5" class="trend-dot" id="dot-2"/>
+              <circle cx="370" cy="130" r="4.5" class="trend-dot" id="dot-3"/>
+              <circle cx="480" cy="130" r="4.5" class="trend-dot" id="dot-4"/>
+            </svg>
+          </div>
+          
+          <div style="margin-top: 15px; font-size: 12px; color: var(--text-secondary); text-align: center; font-weight: 600;" id="trend-summary-text">
+            Loading price indexes...
+          </div>
+        </div>
+
+        <!-- Interactive 2D Floor Plan Visualizer -->
+        <div class="detail-section">
+          <h3 style="font-size: 20px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v18H3z"/><path d="M9 3v18"/><path d="M3 9h18"/><path d="M15 9v12"/></svg>
+            Interactive 2D Floor Plan
+          </h3>
+          <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5;">Click and hover over rooms to view dimensions and configurations. Toggle options below to customize furnishing layouts.</p>
+          
+          <div style="display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; flex-wrap: wrap;">
+            <button class="btn btn-secondary btn-sm active" id="floor-tab-unfurnished" onclick="toggleFurnishing('unfurnished')" style="border-radius: var(--radius-full); cursor: pointer;">Empty (Unfurnished)</button>
+            <button class="btn btn-secondary btn-sm" id="floor-tab-furnished" onclick="toggleFurnishing('furnished')" style="border-radius: var(--radius-full); cursor: pointer;">Fully Furnished Layout</button>
+            <button class="btn btn-secondary btn-sm" id="floor-tab-custom" onclick="toggleFurnishing('custom')" style="border-radius: var(--radius-full); cursor: pointer;">Custom Furnishings Planner</button>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; align-items: start;" class="floor-plan-grid">
+            <!-- SVG Floor Plan -->
+            <div style="background: var(--bg-tertiary); border: 2px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; position: relative; display: flex; align-items: center; justify-content: center; min-height: 280px; overflow: hidden;">
+              <svg id="floor-plan-svg" viewBox="0 0 400 300" style="width: 100%; height: auto; max-width: 380px; overflow: visible;">
+                <defs>
+                  <!-- Sofa drawing -->
+                  <g id="svg-def-sofa">
+                    <rect x="-25" y="-12" width="50" height="24" rx="4" fill="#6366f1" opacity="0.85"/>
+                    <rect x="-25" y="-12" width="8" height="24" rx="2" fill="#4f46e5"/>
+                    <rect x="17" y="-12" width="8" height="24" rx="2" fill="#4f46e5"/>
+                    <rect x="-17" y="6" width="34" height="6" rx="1" fill="#4f46e5"/>
+                  </g>
+                  <!-- Bed drawing -->
+                  <g id="svg-def-bed">
+                    <rect x="-20" y="-25" width="40" height="50" rx="3" fill="#ec4899" opacity="0.85"/>
+                    <rect x="-20" y="-25" width="40" height="12" fill="#fbcfe8"/>
+                    <rect x="-16" y="-22" width="12" height="7" rx="1" fill="white"/>
+                    <rect x="4" y="-22" width="12" height="7" rx="1" fill="white"/>
+                    <line x1="-20" y1="-13" x2="20" y2="-13" stroke="#f472b6" stroke-width="1.5"/>
+                  </g>
+                  <!-- Dining table -->
+                  <g id="svg-def-dining">
+                    <circle cx="0" cy="0" r="18" fill="#f59e0b" opacity="0.85"/>
+                    <circle cx="-22" cy="0" r="4" fill="#d97706"/>
+                    <circle cx="22" cy="0" r="4" fill="#d97706"/>
+                    <circle cx="0" cy="-22" r="4" fill="#d97706"/>
+                    <circle cx="0" cy="22" r="4" fill="#d97706"/>
+                  </g>
+                  <!-- Plant -->
+                  <g id="svg-def-plant">
+                    <circle cx="0" cy="0" r="6" fill="#059669"/>
+                    <circle cx="-4" cy="-4" r="5" fill="#10b981" opacity="0.9"/>
+                    <circle cx="4" cy="-4" r="5" fill="#10b981" opacity="0.9"/>
+                    <circle cx="0" cy="6" r="5" fill="#10b981" opacity="0.9"/>
+                  </g>
+                  <!-- TV Console -->
+                  <g id="svg-def-tv">
+                    <rect x="-30" y="-4" width="60" height="8" rx="1" fill="#1e293b"/>
+                    <rect x="-20" y="-1" width="40" height="2" fill="#0f172a"/>
+                  </g>
+                </defs>
+
+                <!-- Rooms Grid (Hoverable paths) -->
+                <rect x="20" y="20" width="180" height="140" fill="rgba(99, 102, 241, 0.04)" stroke="var(--border-color)" stroke-width="2.5" class="floor-room" id="room-living" onmouseover="showRoomDetail('living')" onmouseout="hideRoomDetail()"/>
+                <rect x="210" y="20" width="170" height="140" fill="rgba(236, 72, 153, 0.04)" stroke="var(--border-color)" stroke-width="2.5" class="floor-room" id="room-bedroom" onmouseover="showRoomDetail('bedroom')" onmouseout="hideRoomDetail()"/>
+                <rect x="20" y="170" width="150" height="110" fill="rgba(245, 158, 11, 0.04)" stroke="var(--border-color)" stroke-width="2.5" class="floor-room" id="room-kitchen" onmouseover="showRoomDetail('kitchen')" onmouseout="hideRoomDetail()"/>
+                <rect x="180" y="170" width="100" height="110" fill="rgba(14, 165, 233, 0.04)" stroke="var(--border-color)" stroke-width="2.5" class="floor-room" id="room-bathroom" onmouseover="showRoomDetail('bathroom')" onmouseout="hideRoomDetail()"/>
+                <rect x="290" y="170" width="90" height="110" fill="rgba(16, 185, 129, 0.04)" stroke="var(--border-color)" stroke-width="2.5" class="floor-room" id="room-balcony" onmouseover="showRoomDetail('balcony')" onmouseout="hideRoomDetail()"/>
+
+                <!-- Room Labels -->
+                <text x="110" y="90" font-size="11" font-weight="700" fill="var(--text-primary)" text-anchor="middle" pointer-events="none">Living Room</text>
+                <text x="110" y="105" font-size="8.5" font-weight="600" fill="var(--text-muted)" text-anchor="middle" pointer-events="none">15' x 12'</text>
+                
+                <text x="295" y="90" font-size="11" font-weight="700" fill="var(--text-primary)" text-anchor="middle" pointer-events="none">Master Bed</text>
+                <text x="295" y="105" font-size="8.5" font-weight="600" fill="var(--text-muted)" text-anchor="middle" pointer-events="none">14' x 12'</text>
+                
+                <text x="95" y="225" font-size="11" font-weight="700" fill="var(--text-primary)" text-anchor="middle" pointer-events="none">Kitchen</text>
+                <text x="95" y="240" font-size="8.5" font-weight="600" fill="var(--text-muted)" text-anchor="middle" pointer-events="none">10' x 8'</text>
+                
+                <text x="230" y="225" font-size="10" font-weight="700" fill="var(--text-primary)" text-anchor="middle" pointer-events="none">Bath</text>
+                <text x="230" y="238" font-size="8.5" font-weight="600" fill="var(--text-muted)" text-anchor="middle" pointer-events="none">7' x 6'</text>
+                
+                <text x="335" y="225" font-size="10" font-weight="700" fill="var(--text-primary)" text-anchor="middle" pointer-events="none">Balcony</text>
+                <text x="335" y="238" font-size="8.5" font-weight="600" fill="var(--text-muted)" text-anchor="middle" pointer-events="none">8' x 4'</text>
+
+                <!-- Doors & Openings -->
+                <path d="M 20 50 A 30 30 0 0 1 50 20" fill="none" stroke="var(--border-color)" stroke-width="1.5" stroke-dasharray="2"/>
+                <line x1="20" y1="50" x2="20" y2="20" stroke="var(--border-color)" stroke-width="2"/>
+                
+                <path d="M 210 130 A 20 20 0 0 1 230 150" fill="none" stroke="var(--border-color)" stroke-width="1.5" stroke-dasharray="2"/>
+                <line x1="210" y1="130" x2="230" y2="130" stroke="var(--border-color)" stroke-width="2"/>
+
+                <line x1="170" y1="200" x2="170" y2="230" stroke="var(--bg-tertiary)" stroke-width="3"/>
+
+                <!-- Interactive Furniture -->
+                <use href="#svg-def-sofa" x="110" y="45" id="furn-sofa" style="display: none;"/>
+                <use href="#svg-def-tv" x="110" y="150" id="furn-tv" style="display: none;"/>
+                <use href="#svg-def-bed" x="295" y="55" id="furn-bed" style="display: none;"/>
+                <use href="#svg-def-dining" x="95" y="200" id="furn-dining" style="display: none;"/>
+                <use href="#svg-def-plant" x="190" y="145" id="furn-plant" style="display: none;"/>
+              </svg>
+            </div>
+
+            <!-- Details Panel & Controls -->
+            <div style="display: flex; flex-direction: column; justify-content: space-between;">
+              <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); padding: 16px; border-radius: var(--radius-md); min-height: 120px; display: flex; flex-direction: column; justify-content: center;">
+                <h4 style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;" id="floor-room-title">Hover over Rooms</h4>
+                <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin: 0;" id="floor-room-desc">Hover over any room quadrant on the floor layout to inspect exact dimension indices, carpet area breakdowns, and ventilation statuses.</p>
+              </div>
+
+              <!-- Planner toolbox -->
+              <div id="floor-planner-toolbox" style="display: none; margin-top: 15px; background: var(--bg-secondary); border: 1px solid var(--border-color); padding: 14px; border-radius: var(--radius-md);">
+                <h4 style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; letter-spacing: 0.5px;">Interactive Furniture Toggles</h4>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  <label style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; cursor: pointer; color: var(--text-primary);">
+                    <input type="checkbox" id="check-furn-sofa" onchange="toggleCustomFurniture('sofa', this.checked)" style="accent-color: var(--primary);">
+                    🛋️ Place Living Room Sofa
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; cursor: pointer; color: var(--text-primary);">
+                    <input type="checkbox" id="check-furn-tv" onchange="toggleCustomFurniture('tv', this.checked)" style="accent-color: var(--primary);">
+                    📺 Place TV Console Panel
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; cursor: pointer; color: var(--text-primary);">
+                    <input type="checkbox" id="check-furn-bed" onchange="toggleCustomFurniture('bed', this.checked)" style="accent-color: var(--primary);">
+                    🛏️ Place Master Bedroom Bed
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; cursor: pointer; color: var(--text-primary);">
+                    <input type="checkbox" id="check-furn-dining" onchange="toggleCustomFurniture('dining', this.checked)" style="accent-color: var(--primary);">
+                    🍽️ Place Kitchen Dining Table
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; cursor: pointer; color: var(--text-primary);">
+                    <input type="checkbox" id="check-furn-plant" onchange="toggleCustomFurniture('plant', this.checked)" style="accent-color: var(--primary);">
+                    🪴 Place Foyer Decorative Plant
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Direct Owner Site Visit Scheduler -->
+        <div class="detail-section" id="visit-scheduler-section">
+          <h3 style="font-size: 20px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Direct Site Visit Scheduler
+          </h3>
+          <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5;">Book an instant physical site visit or live video call walk-through directly with the owner. Choose your preferred type, date, and time slot below.</p>
+          
+          <!-- Visit Type Toggles -->
+          <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button class="btn btn-secondary btn-sm active" id="visit-type-physical" onclick="setVisitType('physical')" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; font-weight: 700; border-radius: var(--radius-md); cursor: pointer;">
+              📍 Physical Site Visit
+            </button>
+            <button class="btn btn-secondary btn-sm" id="visit-type-video" onclick="setVisitType('video')" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; font-weight: 700; border-radius: var(--radius-md); cursor: pointer;">
+              💻 Live Video Tour
+            </button>
+          </div>
+
+          <!-- Date Selector Strip -->
+          <div style="margin-bottom: 16px;">
+            <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 8px; letter-spacing: 0.5px;">Select Visit Date</label>
+            <div id="scheduler-date-strip" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none;">
+              <!-- Generated Dynamically via JS -->
+            </div>
+          </div>
+
+          <!-- Time Slots Grid -->
+          <div style="margin-bottom: 24px;">
+            <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 8px; letter-spacing: 0.5px;">Select Available Time Slot</label>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;" id="scheduler-time-grid">
+              <button class="btn btn-secondary btn-sm" id="slot-0" onclick="selectTimeSlot(0, '10:00 AM - 12:00 PM')" style="padding: 10px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; text-align: center;">10:00 AM - 12:00 PM</button>
+              <button class="btn btn-secondary btn-sm" id="slot-1" onclick="selectTimeSlot(1, '12:00 PM - 02:00 PM')" style="padding: 10px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; text-align: center;">12:00 PM - 02:00 PM</button>
+              <button class="btn btn-secondary btn-sm active" id="slot-2" onclick="selectTimeSlot(2, '02:00 PM - 04:00 PM')" style="padding: 10px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; text-align: center;">02:00 PM - 04:00 PM</button>
+              <button class="btn btn-secondary btn-sm" id="slot-3" onclick="selectTimeSlot(3, '04:00 PM - 06:00 PM')" style="padding: 10px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; text-align: center;">04:00 PM - 06:00 PM</button>
+            </div>
+          </div>
+
+          <!-- Book Visit Action -->
+          <button class="btn btn-accent btn-lg" onclick="triggerBookSiteVisit()" style="width: 100%; padding: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; box-shadow: var(--shadow-md);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Book Site Visit Slot
+          </button>
+        </div>
+
+        <!-- FAQ Accordion Section -->
+        <div class="detail-section" id="property-faq-section" style="margin-top: 30px;">
+          <h3 style="font-size: 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Frequently Asked Questions
+          </h3>
+          <div class="faq-container" style="display: flex; flex-direction: column; gap: 12px;" id="faq-accordion-box">
+            <!-- Populated Dynamically via JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT SIDEBAR (STICKY CONTACT & TOOLS) -->
+      <aside>
+        <div class="sticky-sidebar">
+          
+          <!-- Contact Form Panel -->
+          <div class="detail-section" style="padding: 24px;">
+            <h3 style="font-size: 18px; margin-bottom: 16px;">Contact Property Owner</h3>
+            
+            <div style="display: flex; align-items: center; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px;">
+              <div id="sidebar-owner-avatar" style="width: 44px; height: 44px; border-radius: var(--radius-full); background-color: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px;">U</div>
+              <div style="flex: 1;">
+                <h4 id="sidebar-owner-name">Owner Name</h4>
+                <span style="font-size: 12px; color: var(--text-muted);">Direct Owner (Zero Brokerage)</span>
+              </div>
+              <button id="report-listing-btn" class="btn-report-flag" onclick="openReportModal()" title="Report Broker / Fraud" style="background: none; border: 1px solid var(--border-color); color: var(--text-muted); cursor: pointer; border-radius: var(--radius-sm); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+              </button>
+            </div>
+
+            <form id="enquiry-form" onsubmit="handleEnquirySubmit(event)">
+              <div class="form-group">
+                <label for="enq-name">Your Name</label>
+                <input type="text" id="enq-name" class="form-control" placeholder="Enter name" required>
+              </div>
+              <div class="form-group">
+                <label for="enq-phone">Phone Number</label>
+                <input type="text" id="enq-phone" class="form-control" placeholder="+91 XXXXX XXXXX" required>
+              </div>
+              <div class="form-group">
+                <label for="enq-email">Email Address (Optional)</label>
+                <input type="email" id="enq-email" class="form-control" placeholder="your@email.com">
+              </div>
+              <div class="form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <label for="enq-msg" style="margin-bottom: 0;">Message</label>
+                  <span style="font-size: 10px; font-weight: 700; color: var(--primary); background: rgba(99, 102, 241, 0.1); padding: 2px 6px; border-radius: var(--radius-sm); border: 1px solid rgba(99, 102, 241, 0.2); display: flex; align-items: center; gap: 3px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    AI Copilot
+                  </span>
+                </div>
+                <div style="display: flex; gap: 4px; margin-bottom: 8px;">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="generateAINegotiation('polite')" style="flex: 1; padding: 6px; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 4px;">🤝 Negotiate</button>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="generateAINegotiation('visit')" style="flex: 1; padding: 6px; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 4px;">📅 Tour Visit</button>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="generateAINegotiation('direct')" style="flex: 1; padding: 6px; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 4px;">⚡ Quick Pitch</button>
+                </div>
+                <textarea id="enq-msg" class="form-control" rows="3" style="resize: none;" required>I am interested in this property. Please contact me.</textarea>
+              </div>
+              <button type="submit" class="btn btn-accent" style="width: 100%; padding: 14px;">Request Owner Contact</button>
+            </form>
+          </div>
+
+          <!-- Share Listing Panel -->
+          <div class="detail-section" style="padding: 20px; margin-top: 15px; background: var(--bg-secondary); border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+            <h4 style="font-size: 14px; margin-bottom: 12px; font-weight: 600; color: var(--text-primary);">Share This Listing</h4>
+            <div style="display: flex; gap: 8px;">
+              <button onclick="shareListing('whatsapp')" class="btn btn-secondary btn-sm" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; font-size: 11px; font-weight: 600; border-radius: var(--radius-md); background: #25d366; color: white; border: none; cursor: pointer;">
+                <svg style="fill: currentColor;" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.5-5.739-1.45L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.625 1.451 5.437.002 9.861-4.416 9.863-9.854.001-2.63-1.013-5.101-2.856-6.947C16.438 1.958 13.963 1.948 12.01 1.948c-5.438 0-9.863 4.42-9.866 9.855-.001 1.502.41 2.972 1.192 4.3l-.973 3.55 3.684-.967z"/></svg>
+                WhatsApp
+              </button>
+              <button onclick="shareListing('email')" class="btn btn-secondary btn-sm" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; font-size: 11px; font-weight: 600; border-radius: var(--radius-md); background: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                Email
+              </button>
+              <button onclick="shareListing('copy')" class="btn btn-secondary btn-sm" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; font-size: 11px; font-weight: 600; border-radius: var(--radius-md); background: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-primary); cursor: pointer;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copy
+              </button>
+            </div>
+          </div>
+
+          <!-- PropWorth Average Index Tool -->
+          <div class="propworth-box">
+            <h3 class="calc-title">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m12 8-4 4 4 4M16 12H8"/></svg>
+              PropWorth Valuation
+            </h3>
+            <p style="font-size: 12px; line-height: 1.5; color: var(--text-muted);">Compared to local average listing prices in this city/locality.</p>
+            <div class="meter-wrapper">
+              <div class="meter-track"></div>
+              <div class="meter-pointer" id="propworth-pointer" style="left: 50%;"></div>
+            </div>
+            <div class="meter-labels">
+              <span style="color:#10b981">Underpriced</span>
+              <span style="color:#f59e0b">Fair Deal</span>
+              <span style="color:#ef4444">Overpriced</span>
+            </div>
+            <p id="propworth-status-text" style="font-size: 13px; font-weight: 600; text-align: center; margin-top: 14px; color: var(--text-primary);"></p>
+          </div>
+
+          <!-- EMI & Loan Advisor Calculator Panel -->
+          <div class="calc-container">
+            <div id="calc-tab-buttons" style="display: flex; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 20px; gap: 10px;">
+              <button class="btn btn-secondary btn-sm active" id="calc-tab-emi" onclick="switchCalcTab('emi')" style="border-radius: var(--radius-full); cursor: pointer; padding: 6px 14px; flex: 1; font-weight: 700; font-size: 11px;">Mortgage EMI</button>
+              <button class="btn btn-secondary btn-sm" id="calc-tab-loan" onclick="switchCalcTab('loan')" style="border-radius: var(--radius-full); cursor: pointer; padding: 6px 14px; flex: 1; font-weight: 700; font-size: 11px;">Loan Eligibility</button>
+            </div>
+
+            <!-- TAB 1: EMI WIDGET -->
+            <div id="calc-subpanel-emi">
+              <h3 class="calc-title" id="calc-widget-title" style="margin-bottom: 15px; font-size: 16px;">Mortgage Calculator</h3>
+              <div class="calc-inputs" id="calc-inputs-container">
+                <!-- Rendered Dynamically based on Sell vs Rent -->
+              </div>
+              <div class="calc-result" style="margin-top: 20px;">
+                <p style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;" id="calc-result-label">ESTIMATED MONTHLY OUTLAY</p>
+                <div class="calc-result-value" id="calc-result-value">₹0</div>
+                <span style="font-size: 11px; color: var(--text-muted);">Calculated details depend on inputs.</span>
+              </div>
+            </div>
+
+            <!-- TAB 2: LOAN ADVISOR WIDGET -->
+            <div id="calc-subpanel-loan" style="display: none;">
+              <h3 class="calc-title" style="margin-bottom: 12px; font-size: 16px;">Home Loan Advisor</h3>
+              <p style="font-size: 11px; color: var(--text-muted); line-height: 1.5; margin-bottom: 16px;">Check your borrowing power based on standard financial rules (50% max Debt-to-Income ratio).</p>
+              
+              <div class="calc-inputs">
+                <div class="slider-group">
+                  <div class="slider-header">
+                    <span>Monthly Gross Income</span>
+                    <strong id="loan-val-salary">₹75,000</strong>
+                  </div>
+                  <input type="range" id="loan-slide-salary" min="15000" max="300000" step="5000" value="75000" class="slider-input" oninput="recalcLoanEligibility()" style="cursor: pointer;">
+                </div>
+                <div class="slider-group" style="margin-top: 12px;">
+                  <div class="slider-header">
+                    <span>Existing Monthly EMIs</span>
+                    <strong id="loan-val-debts">₹0</strong>
+                  </div>
+                  <input type="range" id="loan-slide-debts" min="0" max="150000" step="2000" value="0" class="slider-input" oninput="recalcLoanEligibility()" style="cursor: pointer;">
+                </div>
+              </div>
+
+              <div class="calc-result" style="margin-top: 20px; text-align: left; padding: 16px;">
+                <span style="font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Max Loan Eligibility</span>
+                <div class="calc-result-value" id="loan-result-eligibility" style="font-size: 24px; color: var(--primary); margin: 4px 0;">₹45.2 Lakhs</div>
+                
+                <span style="font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Affordability Status</span>
+                <div class="budget-status-bar">
+                  <div class="budget-status-fill" id="loan-budget-fill" style="width: 70%; background-color: #10b981;"></div>
+                </div>
+                <span class="budget-status-badge affordable" id="loan-budget-badge">Easily Affordable</span>
+                <p style="font-size: 11.5px; color: var(--text-muted); margin-top: 8px; line-height: 1.4;" id="loan-budget-desc">You qualify for this property! The loan covers the balance amount comfortably.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </aside>
+
+    </div>
+    
+    <!-- LOADING SPINNER -->
+    <div id="details-loader" style="text-align: center; padding: 120px 0;">
+      <div style="border: 4px solid var(--border-color); border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+      <p style="font-weight: 600; color: var(--text-muted);">Retrieving listing details & performing SEO optimizations...</p>
+    </div>
+  </div>
+
+  <!-- Keyframe Spin Animation -->
+  <style>
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+
+  <!-- Broker Report Modal Overlay -->
+  <div id="report-modal-overlay" class="modal-overlay" style="z-index: 1100;">
+    <div class="modal-content" style="max-width: 480px; width: 95%; padding: 24px; border-radius: var(--radius-lg); background: var(--bg-primary); border: 1px solid var(--border-color); position: relative; text-align: left;">
+      <button class="modal-close" onclick="closeReportModal()">&times;</button>
+      <h3 style="font-size: 20px; margin: 0 0 10px 0; color: #ef4444; display: flex; align-items: center; gap: 8px; font-weight: 800; font-family: 'Outfit', sans-serif;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+        Report Listing
+      </h3>
+      <p style="font-size: 13.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px;">
+        Flag broker posts disguised as owners or duplicate listings. PLATLO uses automated pattern checking to audit duplicate owner phone numbers.
+      </p>
+      
+      <form id="report-listing-form" onsubmit="handleReportSubmit(event)">
+        <div class="form-group">
+          <label for="report-reason" style="font-weight: 700; font-size: 13px;">Reason for Reporting</label>
+          <select id="report-reason" class="form-control" required style="padding: 10px;">
+            <option value="" disabled selected>Select a reason</option>
+            <option value="broker">Hidden Broker / Agent (Disguised as Owner)</option>
+            <option value="duplicate">Duplicate Listing / Fake Information</option>
+            <option value="invalid_phone">Invalid / Incorrect Contact Details</option>
+            <option value="sold">Property already Sold / Rented</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="report-comments" style="font-weight: 700; font-size: 13px;">Additional Comments</label>
+          <textarea id="report-comments" class="form-control" rows="3" placeholder="Explain the issue (e.g. they asked for brokerage fees on call)" style="resize: none; font-family: inherit; padding: 10px;"></textarea>
+        </div>
+        
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+          <button type="button" class="btn btn-secondary" onclick="closeReportModal()" style="font-weight: 600;">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="background-color: #ef4444; border-color: #ef4444; color: white; font-weight: 700;">Submit Report</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Navigation Footer Placeholder -->
+  <footer id="footer-placeholder"></footer>
+
+  <!-- PLATLO Core Scripts -->
+  <script src="./js/config.js"></script>
+  <script src="./js/app.js"></script>
+  
+  <!-- Property Detail Page Script logic -->
+  <script>
+    let activeProperty = null;
+    let activeSlideIndex = 0;
+    
+    // Get Property ID from Query Parameters
+    const params = new URLSearchParams(window.location.search);
+    const propertyId = params.get("id");
+    const triggerContact = params.get("contact") === "1";
+
+    async function loadPropertyDetails() {
+      if (!propertyId) {
+        document.getElementById("details-loader").innerHTML = `<h3 style="color:var(--error);">No Property ID provided. <a href="./properties.html">Go back to search</a></h3>`;
+        return;
+      }
+
+      if (window.PLATLO.isMock) {
+        activeProperty = window.PLATLO_DB.getProperties().find(p => p.id === propertyId);
+      } else {
+        try {
+          const { data, error } = await window.PLATLO.supabase
+            .from("properties")
+            .select("*")
+            .eq("id", propertyId)
+            .single();
+          
+          if (error) throw error;
+          activeProperty = data;
+          
+          // Increment views_count dynamically on Supabase
+          await window.PLATLO.supabase
+            .from("properties")
+            .update({ views_count: (activeProperty.views_count || 0) + 1 })
+            .eq("id", propertyId);
+        } catch (err) {
+          console.error("Supabase failed, checking local storage mock db.", err);
+          activeProperty = window.PLATLO_DB.getProperties().find(p => p.id === propertyId);
+        }
+      }
+
+      if (!activeProperty) {
+        document.getElementById("details-loader").innerHTML = `<h3 style="color:var(--error);">Property not found. <a href="./properties.html">Go back to search</a></h3>`;
+        return;
+      }
+
+      // Hide Loader & Display Grid
+      document.getElementById("details-loader").style.display = "none";
+      document.getElementById("details-main-grid").style.display = "grid";
+
+      // Increment views count locally in mock
+      if (window.PLATLO.isMock) {
+        activeProperty.views_count = (activeProperty.views_count || 0) + 1;
+        window.PLATLO_DB.updateProperty(activeProperty.id, { views_count: activeProperty.views_count });
+      }
+
+      // Execute SEO & Schema Generation
+      setupSEO(activeProperty);
+
+      // Populate DOM Elements
+      populateDOM(activeProperty);
+
+      // Initialize calculators
+      initCalculators(activeProperty);
+
+      // Initialize new integrations (3D Tour, Vastu, price trends)
+      init3DTour(activeProperty);
+      initVastuCompass(activeProperty);
+      initLocalityTrends(activeProperty);
+      initFloorPlan(activeProperty);
+      initSchedulerDates();
+
+      // Auto scroll to contact form if redirect trigger matches
+      if (triggerContact) {
+        document.getElementById("enquiry-form").scrollIntoView({ behavior: 'smooth' });
+        document.getElementById("enq-name").focus();
+      }
+    }
+
+    function initPropertyFAQs(prop) {
+      const faqBox = document.getElementById("faq-accordion-box");
+      if (!faqBox) return null;
+
+      const isRent = prop.listing_type === "rent";
+      const config = prop.bedrooms > 0 ? `${prop.bedrooms} BHK` : `${prop.carpet_area} sq ft`;
+      const type = prop.property_type.charAt(0).toUpperCase() + prop.property_type.slice(1);
+      const priceText = isRent 
+        ? `₹${prop.price.toLocaleString('en-IN')}/month` 
+        : `₹${(prop.price >= 10000000 ? (prop.price/10000000).toFixed(2) + ' Crore' : (prop.price/100000).toFixed(2) + ' Lakh')}`;
+
+      const faqs = [
+        {
+          q: `What is the price of this ${config} ${type} in ${prop.locality}?`,
+          a: `The asking price for this ${config} ${type} is ${priceText}. Since this is a direct listing on PLATLO, there are zero brokerage fees involved, saving you up to 2% on sale or 2 months of rent.`
+        },
+        {
+          q: `Where is the property located and what is the neighborhood connectivity like?`,
+          a: `The property is located at ${prop.address} in the sought-after locality of ${prop.locality}, ${prop.city}. According to our transit and community metrics, this area features highly rated public transport connectivity and proximity to essential markets.`
+        },
+        {
+          q: `Is this ${type} Vastu compliant?`,
+          a: `This property features Vastu-oriented alignment layouts. The Master Bedroom is strategically placed in the South-West quadrant for optimal prosperity, and the Modular Kitchen is aligned with the South-East fire direction.`
+        },
+        {
+          q: `Can I schedule a physical tour of the property?`,
+          a: `Yes! You can book a direct physical site visit or live video tour with the owner instantly using our Direct Owner Site Scheduler above. Simply choose a date card, pick your preferred time slot, and click 'Book Site Visit' to generate your Verified Pass.`
+        }
+      ];
+
+      faqBox.innerHTML = faqs.map((faq, idx) => `
+        <div class="faq-item" style="border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--bg-secondary); overflow: hidden; margin-bottom: 12px; transition: all 0.3s ease;">
+          <button onclick="toggleFAQ(${idx})" style="width: 100%; border: none; background: none; padding: 16px; text-align: left; font-weight: 700; color: var(--text-primary); font-size: 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s;">
+            <span>${faq.q}</span>
+            <span id="faq-icon-${idx}" style="font-size: 18px; color: var(--primary); transition: transform 0.2s;">+</span>
+          </button>
+          <div id="faq-answer-${idx}" style="max-height: 0; overflow: hidden; transition: all 0.3s ease-out; border-top: 0 solid var(--border-color); color: var(--text-secondary); font-size: 13px; line-height: 1.6; padding: 0 16px;">
+            <p style="margin-bottom: 16px; margin-top: 0;">${faq.a}</p>
+          </div>
+        </div>
+      `).join('');
+
+      return {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": faqs.map(faq => ({
+          "@type": "Question",
+          "name": faq.q,
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": faq.a
+          }
+        }))
+      };
+    }
+
+    function toggleFAQ(idx) {
+      const answer = document.getElementById(`faq-answer-${idx}`);
+      const icon = document.getElementById(`faq-icon-${idx}`);
+      if (!answer || !icon) return;
+
+      const isOpen = answer.style.maxHeight && answer.style.maxHeight !== "0px";
+      if (isOpen) {
+        answer.style.maxHeight = "0px";
+        answer.style.padding = "0 16px";
+        answer.style.borderTopWidth = "0px";
+        icon.textContent = "+";
+        icon.style.transform = "rotate(0deg)";
+      } else {
+        document.querySelectorAll("[id^='faq-answer-']").forEach((el, i) => {
+          el.style.maxHeight = "0px";
+          el.style.padding = "0 16px";
+          el.style.borderTopWidth = "0px";
+          const iconEl = document.getElementById(`faq-icon-${i}`);
+          if (iconEl) {
+            iconEl.textContent = "+";
+            iconEl.style.transform = "rotate(0deg)";
+          }
+        });
+        answer.style.maxHeight = "180px";
+        answer.style.padding = "16px";
+        answer.style.borderTopWidth = "1px";
+        icon.textContent = "−";
+        icon.style.transform = "rotate(180deg)";
+      }
+    }
+
+    // Dynamic SEO Setup
+    function setupSEO(prop) {
+      const isRent = prop.listing_type === "rent";
+      const formattedPrice = isRent 
+        ? `₹${prop.price.toLocaleString('en-IN')}/month` 
+        : `₹${(prop.price >= 10000000 ? (prop.price/10000000).toFixed(2) + ' Crores' : (prop.price/100000).toFixed(2) + ' Lakhs')}`;
+      
+      const configText = prop.bedrooms > 0 ? `${prop.bedrooms} BHK` : `${prop.carpet_area} sq ft`;
+      const typeText = prop.property_type.charAt(0).toUpperCase() + prop.property_type.slice(1);
+      
+      // Update Title tag
+      document.title = `${configText} ${typeText} for ${prop.listing_type === 'rent' ? 'Rent' : 'Sale'} in ${prop.locality}, ${prop.city} | PLATLO`;
+      
+      // Update Meta description
+      const descMeta = document.getElementById("meta-description");
+      if (descMeta) {
+        descMeta.setAttribute("content", `${prop.title}. Specifications: ${configText} ${typeText} located at ${prop.address}, society: ${prop.society}. Price: ${formattedPrice}. Zero brokerage, deal directly with owner.`);
+      }
+
+      // Update or create Canonical link
+      let canonicalLink = document.querySelector("link[rel='canonical']");
+      if (!canonicalLink) {
+        canonicalLink = document.createElement("link");
+        canonicalLink.rel = "canonical";
+        document.head.appendChild(canonicalLink);
+      }
+      canonicalLink.href = `https://platlo.com/property.html?id=${prop.id}`;
+
+      // Update Visual Breadcrumbs
+      const visualBreadcrumbs = document.getElementById("visual-breadcrumbs");
+      if (visualBreadcrumbs) {
+        visualBreadcrumbs.style.display = "flex";
+        visualBreadcrumbs.innerHTML = `
+          <a href="./index.html" style="color: var(--primary); text-decoration: none; font-weight: 600;">Home</a>
+          <span style="color: var(--text-muted); font-size: 11px;">/</span>
+          <a href="./properties.html?city=${encodeURIComponent(prop.city)}" style="color: var(--primary); text-decoration: none; font-weight: 600;">${prop.city}</a>
+          <span style="color: var(--text-muted); font-size: 11px;">/</span>
+          <a href="./properties.html?city=${encodeURIComponent(prop.city)}&locality=${encodeURIComponent(prop.locality)}" style="color: var(--primary); text-decoration: none; font-weight: 600;">${prop.locality}</a>
+          <span style="color: var(--text-muted); font-size: 11px;">/</span>
+          <span style="color: var(--text-muted); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 300px;">${prop.title}</span>
+        `;
+      }
+
+      // Update specs dynamically
+      const isPlot = prop.property_type === "plot";
+      const possessionText = isRent ? "Immediate" : (prop.id.charCodeAt(prop.id.length - 1) % 2 === 0 ? "Ready to Move" : "Dec 2026 (Under Construction)");
+      
+      let reraText = "RERA Exempt (Direct Owner)";
+      if (!isRent && !isPlot) {
+        reraText = `UPRERAPRJ${Math.floor(100000 + (prop.price % 899999))}`;
+      }
+      
+      const possessionEl = document.getElementById("spec-possession");
+      const reraEl = document.getElementById("spec-rera");
+      if (possessionEl) possessionEl.textContent = possessionText;
+      if (reraEl) reraEl.textContent = reraText;
+
+      // BreadcrumbList for property page
+      const breadcrumbSchema = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://platlo.com/index.html"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": prop.city,
+            "item": `https://platlo.com/properties.html?city=${encodeURIComponent(prop.city)}`
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": prop.locality,
+            "item": `https://platlo.com/properties.html?city=${encodeURIComponent(prop.city)}&locality=${encodeURIComponent(prop.locality)}`
+          },
+          {
+            "@type": "ListItem",
+            "position": 4,
+            "name": prop.title,
+            "item": `https://platlo.com/property.html?id=${prop.id}`
+          }
+        ]
+      };
+
+      // RealEstateListing Schema
+      const listingSchema = {
+        "@context": "https://schema.org",
+        "@type": "RealEstateListing",
+        "name": prop.title,
+        "description": prop.description,
+        "price": prop.price,
+        "priceCurrency": "INR",
+        "datePosted": prop.created_at,
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": prop.locality,
+          "addressRegion": prop.city,
+          "streetAddress": prop.address
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": prop.price,
+          "priceCurrency": "INR",
+          "businessType": prop.listing_type === "rent" ? "LeaseAction" : "SellAction"
+        }
+      };
+
+      // Calculate ratings summary
+      const reviewCount = 8 + (prop.id.charCodeAt(prop.id.length - 1) % 15);
+      const ratingValue = (4.3 + (prop.id.charCodeAt(prop.id.length - 1) % 7) * 0.1).toFixed(1);
+
+      const ratingTextEl = document.getElementById("detail-rating-text");
+      if (ratingTextEl) {
+        ratingTextEl.textContent = `${ratingValue} (${reviewCount} Reviews)`;
+      }
+
+      listingSchema.aggregateRating = {
+        "@type": "AggregateRating",
+        "ratingValue": ratingValue,
+        "reviewCount": reviewCount,
+        "bestRating": "5",
+        "worstRating": "1"
+      };
+      listingSchema.possessionStatus = possessionText;
+      if (reraText.startsWith("UPRERA")) {
+        listingSchema.reraNumber = reraText;
+      }
+
+      // Generate FAQ schema and markup
+      const faqSchema = initPropertyFAQs(prop);
+
+      const graph = [breadcrumbSchema, listingSchema];
+      if (faqSchema) graph.push(faqSchema);
+
+      // Inject JSON-LD Schema
+      const schemaScript = document.createElement("script");
+      schemaScript.type = "application/ld+json";
+      schemaScript.text = JSON.stringify({
+        "@context": "https://schema.org",
+        "@graph": graph
+      });
+      document.head.appendChild(schemaScript);
+
+      window.toggleFAQ = toggleFAQ;
+    }
+
+    // Populate Page Elements
+    function populateDOM(prop) {
+      document.getElementById("detail-title").textContent = prop.title;
+      document.getElementById("detail-location").textContent = `${prop.locality}, ${prop.city}`;
+      document.getElementById("detail-description").textContent = prop.description;
+      document.getElementById("detail-society").textContent = prop.society || "Independent Building";
+      document.getElementById("detail-address").textContent = prop.address;
+
+      const isRent = prop.listing_type === "rent";
+      document.getElementById("detail-price").innerHTML = isRent 
+        ? `₹${prop.price.toLocaleString('en-IN')}<span class="rent-period" style="font-size:16px; font-weight:500; color:var(--text-muted)">/mo</span>` 
+        : `₹${(prop.price >= 10000000 ? (prop.price/10000000).toFixed(2) + ' Cr' : (prop.price/100000).toFixed(2) + ' L')}`;
+      
+      const pricePerSqFt = prop.carpet_area > 0 ? Math.round(prop.price / prop.carpet_area) : 0;
+      document.getElementById("detail-price-sqft").textContent = isRent 
+        ? `₹${pricePerSqFt.toLocaleString('en-IN')} / sq ft deposit index` 
+        : `₹${pricePerSqFt.toLocaleString('en-IN')} / sq ft`;
+
+      // Badge
+      const typeBadge = document.getElementById("detail-type-badge");
+      typeBadge.textContent = isRent ? "For Rent" : "For Sale";
+      typeBadge.className = `badge ${isRent ? 'badge-rent' : 'badge-sale'}`;
+
+      // Specs boxes
+      document.getElementById("spec-bhk").textContent = prop.bedrooms > 0 ? `${prop.bedrooms} BHK` : `${prop.property_type.toUpperCase()}`;
+      document.getElementById("spec-area").textContent = `${prop.carpet_area.toLocaleString('en-IN')} Sq.Ft`;
+      document.getElementById("spec-furnishing").textContent = prop.furnishing.replace('-furnished', '').charAt(0).toUpperCase() + prop.furnishing.replace('-furnished', '').slice(1);
+      document.getElementById("spec-parking").textContent = prop.parking.charAt(0).toUpperCase() + prop.parking.slice(1);
+      document.getElementById("spec-floor").textContent = prop.floor > 0 ? `${prop.floor} of ${prop.total_floors}` : 'Ground Floor';
+
+      // Load Images Carousel
+      const carousel = document.getElementById("gallery-slides-container");
+      const slides = prop.images.length > 0 ? prop.images : ["./images/property_1.jpg"];
+      
+      carousel.innerHTML = slides.map((src, index) => `
+        <img src="${src}" class="gallery-slide ${index === 0 ? 'active' : ''}" alt="${prop.title}">
+      `).join('');
+
+      // Sidebar Owner Details
+      document.getElementById("sidebar-owner-name").textContent = prop.contact_name;
+      document.getElementById("sidebar-owner-avatar").textContent = prop.contact_name.charAt(0).toUpperCase();
+
+      // Dynamic Neighborhood Score calculations based on city
+      let scores = { transit: 8.0, lifestyle: 7.8, safety: 8.6, proximity: 8.0 };
+      if (prop.city === "Orai") {
+        scores = { transit: 8.5, lifestyle: 8.6, safety: 9.2, proximity: 8.8 };
+      } else if (prop.city === "Jalaun") {
+        scores = { transit: 7.6, lifestyle: 7.5, safety: 8.8, proximity: 8.0 };
+      } else if (prop.city === "Kalpi") {
+        scores = { transit: 8.0, lifestyle: 7.8, safety: 8.5, proximity: 8.2 };
+      } else if (prop.city === "Konch") {
+        scores = { transit: 7.4, lifestyle: 7.2, safety: 8.8, proximity: 7.6 };
+      } else if (prop.city === "Jhansi") {
+        scores = { transit: 9.0, lifestyle: 9.2, safety: 8.8, proximity: 9.0 };
+      }
+      
+      document.getElementById("score-transit").textContent = `${scores.transit} / 10`;
+      document.getElementById("bar-transit").style.width = `${scores.transit * 10}%`;
+      
+      document.getElementById("score-lifestyle").textContent = `${scores.lifestyle} / 10`;
+      document.getElementById("bar-lifestyle").style.width = `${scores.lifestyle * 10}%`;
+      
+      document.getElementById("score-safety").textContent = `${scores.safety} / 10`;
+      document.getElementById("bar-safety").style.width = `${scores.safety * 10}%`;
+      
+      document.getElementById("score-proximity").textContent = `${scores.proximity} / 10`;
+      document.getElementById("bar-proximity").style.width = `${scores.proximity * 10}%`;
+
+      // Update micro-map elements
+      const mapLocality = document.getElementById("proximity-map-locality");
+      if (mapLocality) {
+        mapLocality.textContent = `${prop.locality}, ${prop.city}`;
+        const baseTime = Math.max(2, Math.round((10 - scores.proximity) * 3.5));
+        document.getElementById("map-time-transit").textContent = `${baseTime} mins`;
+        document.getElementById("map-time-medical").textContent = `${baseTime + 2} mins`;
+        document.getElementById("map-time-education").textContent = `${Math.max(1, baseTime - 1)} mins`;
+      }
+
+      // Suspicious broker warning and moderation check
+      const sidebar = document.querySelector(".sticky-sidebar");
+      if (sidebar) {
+        let warningBanner = document.getElementById("detail-broker-warning");
+        if (warningBanner) warningBanner.remove();
+        
+        const isSuspicious = window.PLATLO_DB.isSuspiciousBrokerPhone(prop.contact_phone);
+        const reports = window.PLATLO_DB.getReports();
+        const isReported = reports.some(r => r.property_id === prop.id);
+        
+        if (isSuspicious) {
+          warningBanner = document.createElement("div");
+          warningBanner.id = "detail-broker-warning";
+          warningBanner.style.cssText = "margin-bottom: 20px; border-radius: var(--radius-md); padding: 16px; font-size:13px; font-weight:700; line-height:1.5; background:rgba(239, 68, 68, 0.15); border:1px solid rgba(239, 68, 68, 0.35); color:#ef4444; display:flex; flex-direction:column; gap:6px; box-shadow: var(--shadow-sm);";
+          warningBanner.innerHTML = `
+            <span style="font-size:14px; font-weight:800; display:flex; align-items:center; gap:6px;">⚠️ Suspicious Broker Warning</span>
+            <span style="font-weight:500; color:var(--text-secondary);">This phone number has been flagged for multiple listing submissions. Verify the owner’s registry papers carefully before making any booking or advance token payment.</span>
+          `;
+          sidebar.insertBefore(warningBanner, sidebar.firstChild);
+        } else if (isReported) {
+          warningBanner = document.createElement("div");
+          warningBanner.id = "detail-broker-warning";
+          warningBanner.style.cssText = "margin-bottom: 20px; border-radius: var(--radius-md); padding: 16px; font-size:13px; font-weight:700; line-height:1.5; background:rgba(245, 158, 11, 0.15); border:1px solid rgba(245, 158, 11, 0.35); color:#f59e0b; display:flex; flex-direction:column; gap:6px; box-shadow: var(--shadow-sm);";
+          warningBanner.innerHTML = `
+            <span style="font-size:14px; font-weight:800; display:flex; align-items:center; gap:6px;">⏳ Listing Under Review</span>
+            <span style="font-weight:500; color:var(--text-secondary);">This property has been reported by other users and is currently undergoing verification checks by our community moderation system.</span>
+          `;
+          sidebar.insertBefore(warningBanner, sidebar.firstChild);
+        }
+      }
+    }
+
+    // Slides Navigation
+    function changeSlide(direction) {
+      const slides = document.querySelectorAll(".gallery-slide");
+      if (slides.length <= 1) return;
+
+      slides[activeSlideIndex].classList.remove("active");
+      activeSlideIndex = (activeSlideIndex + direction + slides.length) % slides.length;
+      slides[activeSlideIndex].classList.add("active");
+    }
+
+    // EMI & Expenses Calculators
+    function initCalculators(prop) {
+      const tabButtons = document.getElementById("calc-tab-buttons");
+      if (tabButtons) {
+        if (prop.listing_type === "sell") {
+          tabButtons.style.display = "flex";
+        } else {
+          tabButtons.style.display = "none";
+        }
+      }
+
+      const inputsContainer = document.getElementById("calc-inputs-container");
+      const widgetTitle = document.getElementById("calc-widget-title");
+      const resultLabel = document.getElementById("calc-result-label");
+
+      if (prop.listing_type === "sell") {
+        widgetTitle.textContent = "Mortgage EMI Calculator";
+        resultLabel.textContent = "ESTIMATED MONTHLY EMI";
+        
+        const homeValue = prop.price;
+        const defaultDownPayment = Math.round(homeValue * 0.20); // 20% down payment
+
+        inputsContainer.innerHTML = `
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>Down Payment (₹)</span>
+              <span id="label-downpayment">₹${defaultDownPayment.toLocaleString('en-IN')}</span>
+            </div>
+            <input type="range" class="slider-input" id="slide-downpayment" min="0" max="${homeValue}" step="${Math.round(homeValue/100)}" value="${defaultDownPayment}" oninput="calcEMI()">
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>Interest Rate (%)</span>
+              <span id="label-interest">8.5%</span>
+            </div>
+            <input type="range" class="slider-input" id="slide-interest" min="5" max="15" step="0.1" value="8.5" oninput="calcEMI()">
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>Loan Tenure (Years)</span>
+              <span id="label-tenure">20 Years</span>
+            </div>
+            <input type="range" class="slider-input" id="slide-tenure" min="5" max="30" step="1" value="20" oninput="calcEMI()">
+          </div>
+        `;
+        
+        // Append Stamp Duty & Registration Charges overview
+        const stampDuty = Math.round(homeValue * 0.055);
+        const regCharges = Math.round(homeValue * 0.01);
+        const totalEstimatedCost = homeValue + stampDuty + regCharges;
+        inputsContainer.innerHTML += `
+          <div style="font-size:12px; padding: 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background-color: var(--bg-tertiary); margin-top: 15px; display: flex; flex-direction: column; gap: 8px;">
+            <strong style="color: var(--text-primary); font-size:13px;">Acquisition Costs (Govt. Charges):</strong>
+            <div style="display:flex; justify-content:space-between;">
+              <span>Stamp Duty (Est. 5.5%):</span>
+              <span style="font-weight:600; color:var(--text-primary);">₹${stampDuty.toLocaleString('en-IN')}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span>Registration Fees (Est. 1%):</span>
+              <span style="font-weight:600; color:var(--text-primary);">₹${regCharges.toLocaleString('en-IN')}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; border-top: 1px solid var(--border-color); padding-top: 8px; font-weight:700; color:var(--primary);">
+              <span>Total Estimated Cost:</span>
+              <span>₹${totalEstimatedCost.toLocaleString('en-IN')}</span>
+            </div>
+          </div>
+        `;
+
+        calcEMI();
+      } else {
+        // Rent calculations
+        widgetTitle.textContent = "Rent Budget Breakdown";
+        resultLabel.textContent = "TOTAL MONTHLY EXPENSE";
+
+        inputsContainer.innerHTML = `
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>Monthly Maintenance (₹)</span>
+              <span id="label-maintenance">₹2,000</span>
+            </div>
+            <input type="range" class="slider-input" id="slide-maintenance" min="0" max="15000" step="500" value="2000" oninput="calcRentTotal()">
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>Utility Estimator (₹)</span>
+              <span id="label-utilities">₹3,000</span>
+            </div>
+            <input type="range" class="slider-input" id="slide-utilities" min="500" max="10000" step="500" value="3000" oninput="calcRentTotal()">
+          </div>
+        `;
+        
+        // Show security deposit and stamp paper cost
+        const depAmt = prop.price * 5; // standard 5 months deposit mock
+        inputsContainer.innerHTML += `
+          <div style="font-size:12px; padding: 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background-color: var(--bg-tertiary); margin-top: 15px; display: flex; flex-direction: column; gap: 8px;">
+            <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700;">
+              <span>Security Deposit (Est. 5x):</span>
+              <span style="color:var(--text-primary)">₹${depAmt.toLocaleString('en-IN')}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:11px; border-top:1px solid var(--border-color); padding-top:6px;">
+              <span>Stamp Paper (Standard 11mo):</span>
+              <span>₹200</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:11px;">
+              <span>Agreement Drafting Fee:</span>
+              <span style="color:#10b981; font-weight:600;">₹0 (Free on PLATLO)</span>
+            </div>
+          </div>
+        `;
+
+        calcRentTotal();
+      }
+
+      // PropWorth automated calculation: Compare current price per sq ft with a simulated baseline for the locality
+      const VALUATION_BASELINES = {
+        "Lucknow": { sell: 5000, rent: 15 },
+        "Noida": { sell: 6500, rent: 20 },
+        "Varanasi": { sell: 4500, rent: 12 },
+        "Jhansi": { sell: 3500, rent: 9 },
+        "Orai": { sell: 2500, rent: 7 },
+        "Jalaun": { sell: 2200, rent: 6 },
+        "Kalpi": { sell: 2000, rent: 5 },
+        "Konch": { sell: 1800, rent: 5 }
+      };
+      const DEFAULT_VALUATION_BASELINE = { sell: 3000, rent: 10 };
+
+      const baselineSet = VALUATION_BASELINES[prop.city] || DEFAULT_VALUATION_BASELINE;
+      const baselineVal = baselineSet[prop.listing_type] || (prop.listing_type === "rent" ? 10 : 3000);
+      const actualVal = prop.carpet_area ? (prop.price / prop.carpet_area) : baselineVal;
+      const deviationFraction = (actualVal - baselineVal) / baselineVal;
+      const deviation = deviationFraction * 100;
+
+      // Update the valuation badge at the top
+      const worthBadge = document.getElementById("detail-worth-badge");
+      if (worthBadge) {
+        worthBadge.style.display = "inline-block";
+        if (deviationFraction < -0.12) {
+          worthBadge.className = "badge badge-deal-great";
+          worthBadge.textContent = "Great Deal";
+        } else if (deviationFraction > 0.12) {
+          worthBadge.className = "badge badge-deal-premium";
+          worthBadge.textContent = "Premium";
+        } else {
+          worthBadge.className = "badge badge-deal-fair";
+          worthBadge.textContent = "Fair Price";
+        }
+      }
+      
+      // Map deviation to pointer (from 10% to 90% along the scale)
+      // -30% deviation (very underpriced) -> 15%
+      // 0% deviation (fair deal) -> 50%
+      // +30% deviation (overpriced) -> 85%
+      let leftPercent = 50 + (deviation * 1.15); // scaled
+      leftPercent = Math.max(15, Math.min(85, leftPercent));
+      
+      document.getElementById("propworth-pointer").style.left = `${leftPercent}%`;
+      
+      let statusText = "Fair Deal: The pricing matches local market averages.";
+      if (deviation < -12) {
+        statusText = `Highly Underpriced: Listing is approx ${Math.abs(Math.round(deviation))}% below market average! Great investment.`;
+      } else if (deviation > 12) {
+        statusText = `Premium Pricing: Listing is approx ${Math.round(deviation)}% above local average indexes.`;
+      }
+      document.getElementById("propworth-status-text").textContent = statusText;
+    }
+
+    // Mortgage calculation helper
+    function calcEMI() {
+      const homeValue = activeProperty.price;
+      const downPayment = parseFloat(document.getElementById("slide-downpayment").value);
+      const annualRate = parseFloat(document.getElementById("slide-interest").value);
+      const tenureYears = parseInt(document.getElementById("slide-tenure").value);
+
+      document.getElementById("label-downpayment").textContent = `₹${downPayment.toLocaleString('en-IN')}`;
+      document.getElementById("label-interest").textContent = `${annualRate}%`;
+      document.getElementById("label-tenure").textContent = `${tenureYears} Years`;
+
+      const loanAmount = homeValue - downPayment;
+      if (loanAmount <= 0) {
+        document.getElementById("calc-result-value").textContent = "₹0";
+        return;
+      }
+
+      const monthlyRate = (annualRate / 12) / 100;
+      const totalMonths = tenureYears * 12;
+
+      // EMI Formula: P * r * (1+r)^n / ((1+r)^n - 1)
+      const emi = loanAmount * monthlyRate * Math.pow(1 + monthlyRate, totalMonths) / (Math.pow(1 + monthlyRate, totalMonths) - 1);
+      
+      document.getElementById("calc-result-value").textContent = isNaN(emi) ? "₹0" : `₹${Math.round(emi).toLocaleString('en-IN')}`;
+    }
+
+    // Rent total outlay helper
+    function calcRentTotal() {
+      const monthlyRent = activeProperty.price;
+      const maintenance = parseFloat(document.getElementById("slide-maintenance").value);
+      const utilities = parseFloat(document.getElementById("slide-utilities").value);
+
+      document.getElementById("label-maintenance").textContent = `₹${maintenance.toLocaleString('en-IN')}`;
+      document.getElementById("label-utilities").textContent = `₹${utilities.toLocaleString('en-IN')}`;
+
+      const total = monthlyRent + maintenance + utilities;
+      document.getElementById("calc-result-value").textContent = `₹${total.toLocaleString('en-IN')}`;
+    }
+
+    // Enquiry Submissions
+    async function handleEnquirySubmit(event) {
+      event.preventDefault();
+      const name = document.getElementById("enq-name").value;
+      const phone = document.getElementById("enq-phone").value;
+      const email = document.getElementById("enq-email").value;
+      const message = document.getElementById("enq-msg").value;
+
+      if (window.PLATLO.isMock) {
+        // Save to localStorage enquiry array
+        const mockEnquiry = {
+          id: "enq-" + Math.random().toString(36).substr(2, 9),
+          property_id: propertyId,
+          sender_name: name,
+          sender_phone: phone,
+          sender_email: email,
+          message: message,
+          created_at: new Date().toISOString()
+        };
+        window.PLATLO_DB.saveEnquiry(mockEnquiry);
+        showToast("Enquiry sent successfully! Owner will contact you.");
+        
+        // Reset message form
+        document.getElementById("enq-msg").value = "I am interested in this property. Please contact me.";
+      } else {
+        try {
+          const { error } = await window.PLATLO.supabase
+            .from("enquiries")
+            .insert({
+              property_id: propertyId,
+              sender_name: name,
+              sender_phone: phone,
+              sender_email: email,
+              message: message
+            });
+          
+          if (error) throw error;
+          showToast("Enquiry sent successfully! Owner will contact you.");
+          document.getElementById("enq-msg").value = "I am interested in this property. Please contact me.";
+        } catch (err) {
+          console.error("Enquiry failed to save in Supabase, saving to local storage fallback", err);
+          // Fallback
+          const mockEnquiry = {
+            id: "enq-" + Math.random().toString(36).substr(2, 9),
+            property_id: propertyId,
+            sender_name: name,
+            sender_phone: phone,
+            sender_email: email,
+            message: message,
+            created_at: new Date().toISOString()
+          };
+          window.PLATLO_DB.saveEnquiry(mockEnquiry);
+          showToast("Enquiry sent successfully!");
+        }
+      }
+    }
+
+    // AI Enquiry Negotiation copilot message generator
+    function generateAINegotiation(tone) {
+      if (!activeProperty) {
+        showToast("Property details not loaded yet.", "error");
+        return;
+      }
+      const buyerName = document.getElementById("enq-name").value.trim() || "interested buyer";
+      const ownerName = activeProperty.contact_name || "Owner";
+      const title = activeProperty.title;
+      const isRent = activeProperty.listing_type === "rent";
+      const price = activeProperty.price;
+      const formattedPrice = isRent 
+        ? `₹${price.toLocaleString('en-IN')}/mo` 
+        : `₹${(price >= 10000000 ? (price/10000000).toFixed(2) + ' Cr' : (price/100000).toFixed(2) + ' L')}`;
+
+      let message = "";
+      if (tone === "polite") {
+        if (isRent) {
+          const counterPrice = Math.round(price * 0.90); // 10% discount
+          message = `Hello ${ownerName}, I'm very interested in your property "${title}". I'm looking to rent it long-term. Since this is a direct deal (zero brokerage), would you be open to considering a monthly rent of around ₹${counterPrice.toLocaleString('en-IN')}/mo? Let's connect to discuss this further! - ${buyerName}`;
+        } else {
+          const counterPrice = Math.round(price * 0.93); // 7% discount
+          const formattedCounter = `₹${(counterPrice >= 10000000 ? (counterPrice/10000000).toFixed(2) + ' Cr' : (counterPrice/100000).toFixed(2) + ' L')}`;
+          message = `Dear ${ownerName}, I came across your property "${title}" listed at ${formattedPrice}. It matches my requirements perfectly. Since we are connecting directly without any brokers, I was wondering if you might be open to negotiating the price closer to ${formattedCounter} for a quick registry/registry process? Look forward to your response. - ${buyerName}`;
+        }
+      } else if (tone === "visit") {
+        message = `Hi ${ownerName}, I'm interested in viewing your property "${title}". I'm available for a physical site visit this coming weekend. Could you please share a convenient time and the exact location pins so we can coordinate a visit? Thank you. - ${buyerName}`;
+      } else if (tone === "direct") {
+        if (isRent) {
+          message = `Hi ${ownerName}, I love the description and location of your property "${title}". I have a stable income, no broker involvement, and can pay the security deposit immediately for a quick lease agreement. Let's talk over a call! - ${buyerName}`;
+        } else {
+          message = `Hello ${ownerName}, I am highly interested in purchasing your property "${title}" listed for ${formattedPrice}. I have my home loan pre-approved and can make the token advance immediately. Let's arrange a call to finalize the registry and paperwork. - ${buyerName}`;
+        }
+      }
+
+      const msgInput = document.getElementById("enq-msg");
+      if (msgInput) {
+        msgInput.value = message;
+        showToast(`AI generated a ${tone} draft for you!`, "success");
+      }
+    }
+
+    // Share Listing Helper
+    function shareListing(medium) {
+      if (!activeProperty) {
+        showToast("Property details not loaded yet.", "error");
+        return;
+      }
+      const pageUrl = window.location.href;
+      const text = `Check out this zero-brokerage direct owner listing on PLATLO: "${activeProperty.title}" in ${activeProperty.locality}, ${activeProperty.city}. Click to view details:`;
+      
+      if (medium === "whatsapp") {
+        const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text + " " + pageUrl)}`;
+        window.open(whatsappUrl, "_blank");
+      } else if (medium === "email") {
+        const emailUrl = `mailto:?subject=${encodeURIComponent("PLATLO Property Listing: " + activeProperty.title)}&body=${encodeURIComponent(text + "\n\n" + pageUrl)}`;
+        window.open(emailUrl, "_blank");
+      } else if (medium === "copy") {
+        navigator.clipboard.writeText(pageUrl).then(() => {
+          showToast("Listing link copied to clipboard!", "success");
+        }).catch(err => {
+          showToast("Failed to copy link.", "error");
+        });
+      }
+    }
+
+    // ==========================================================================
+    // 11. HOUSING.COM 3D TOUR & COMPASS CONTROLLER
+    // ==========================================================================
+    let isDraggingPano = false;
+    let startPanoX = 0;
+    let currentPanoOffset = 0;
+    let currentRotation = 0;
+    let activePanoScene = "entrance";
+    let panoScenes = {};
+
+    function toggle3DTour(show) {
+      const gallery = document.getElementById("regular-gallery-box");
+      const panoBox = document.getElementById("panoramic-tour-box");
+      if (!gallery || !panoBox) return;
+
+      if (show) {
+        gallery.style.display = "none";
+        panoBox.style.display = "block";
+        loadPanoScene("entrance");
+        showToast("Drag left or right to look around. Click hotspots to change rooms!", "info");
+      } else {
+        gallery.style.display = "block";
+        panoBox.style.display = "none";
+      }
+    }
+
+    function init3DTour(prop) {
+      panoScenes = {
+        entrance: {
+          label: "Entrance & Foyer",
+          img: prop.images[0] || "./images/property_1.jpg",
+          hotspots: [
+            { text: "Walk to Living Room", x: "65%", y: "55%", target: "living" }
+          ]
+        },
+        living: {
+          label: "Spacious Living Room",
+          img: "./images/property_1.jpg",
+          hotspots: [
+            { text: "Back to Entrance", x: "15%", y: "60%", target: "entrance" },
+            { text: "Walk to Kitchen", x: "75%", y: "55%", target: "kitchen" }
+          ]
+        },
+        kitchen: {
+          label: "Modular Kitchen & Dining Area",
+          img: "./images/property_2.jpg",
+          hotspots: [
+            { text: "Back to Living Room", x: "25%", y: "55%", target: "living" }
+          ]
+        }
+      };
+      
+      setupPanoDrag();
+      
+      // Expose to window scope
+      window.toggle3DTour = toggle3DTour;
+      window.loadPanoScene = loadPanoScene;
+      window.setStagingStyle = setStagingStyle;
+    }
+
+    let activeStagingStyle = "none";
+
+    function setStagingStyle(style) {
+      activeStagingStyle = style;
+      
+      const styles = ["none", "modern", "classic", "minimalist"];
+      styles.forEach(s => {
+        const btn = document.getElementById(`staging-btn-${s}`);
+        if (btn) {
+          if (s === style) {
+            btn.classList.add("active");
+            btn.style.background = "var(--primary)";
+            btn.style.color = "white";
+          } else {
+            btn.classList.remove("active");
+            btn.style.background = "none";
+            btn.style.color = "var(--text-muted)";
+          }
+        }
+      });
+      
+      renderStagingFurniture();
+    }
+
+    function renderStagingFurniture() {
+      const container = document.getElementById("pano-staging-furniture-container");
+      if (!container) return;
+      
+      if (activeStagingStyle === "none") {
+        container.innerHTML = "";
+        return;
+      }
+      
+      const html = getStagingFurnitureHTML(activeStagingStyle, activePanoScene);
+      container.innerHTML = html;
+    }
+
+    function getStagingFurnitureHTML(style, sceneId) {
+      // SVGs representing furniture
+      const svgModernEntrance = `
+      <svg viewBox="0 0 200 250" width="100%" height="100%">
+        <circle cx="100" cy="70" r="45" fill="none" stroke="#D4AF37" stroke-width="4" filter="drop-shadow(0px 4px 6px rgba(0,0,0,0.15))"/>
+        <circle cx="100" cy="70" r="43" fill="#E8F4F8" opacity="0.6"/>
+        <path d="M 70 50 Q 80 40 100 45" stroke="white" stroke-width="2" fill="none" opacity="0.7"/>
+        <rect x="30" y="140" width="140" height="8" rx="2" fill="#8B5A2B"/>
+        <rect x="30" y="148" width="8" height="90" fill="#222222"/>
+        <rect x="162" y="148" width="8" height="90" fill="#222222"/>
+        <line x1="38" y1="210" x2="162" y2="210" stroke="#222222" stroke-width="3"/>
+        <path d="M 60 140 L 65 115 L 75 115 L 80 140 Z" fill="#E2E8F0" stroke="#CBD5E1" stroke-width="1"/>
+        <path d="M 70 115 Q 85 90 90 95 Q 75 110 70 115" fill="#10B981" opacity="0.85"/>
+        <path d="M 70 115 Q 55 95 50 100 Q 65 110 70 115" fill="#047857" opacity="0.85"/>
+        <path d="M 70 115 Q 70 80 73 85 Q 73 105 70 115" fill="#059669" opacity="0.9"/>
+      </svg>`;
+
+      const svgClassicEntrance = `
+      <svg viewBox="0 0 200 250" width="100%" height="100%">
+        <rect x="25" y="120" width="150" height="110" rx="3" fill="#4A2511" stroke="#31190B" stroke-width="2"/>
+        <rect x="35" y="130" width="60" height="90" fill="#3D1E0E" stroke="#31190B" stroke-width="1.5"/>
+        <rect x="105" y="130" width="60" height="90" fill="#3D1E0E" stroke="#31190B" stroke-width="1.5"/>
+        <circle cx="85" cy="175" r="4" fill="#D4AF37"/>
+        <circle cx="115" cy="175" r="4" fill="#D4AF37"/>
+        <rect x="30" y="230" width="15" height="15" fill="#31190B"/>
+        <rect x="155" y="230" width="15" height="15" fill="#31190B"/>
+        <path d="M 140 120 L 140 95" stroke="#D4AF37" stroke-width="4"/>
+        <path d="M 125 95 L 155 95 L 165 70 L 115 70 Z" fill="#FCE7F3" stroke="#F472B6" stroke-width="1"/>
+        <polygon points="140 90 90 230 190 230" fill="url(#lamp-glow)" opacity="0.15" pointer-events="none"/>
+        <defs>
+          <linearGradient id="lamp-glow" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#FDE047"/>
+            <stop offset="100%" stop-color="#FDE047" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+      </svg>`;
+
+      const svgMinimalistEntrance = `
+      <svg viewBox="0 0 200 250" width="100%" height="100%">
+        <rect x="20" y="160" width="110" height="12" rx="1" fill="#DDB892"/>
+        <line x1="30" y1="172" x2="30" y2="230" stroke="#4A3728" stroke-width="3"/>
+        <line x1="120" y1="172" x2="120" y2="230" stroke="#4A3728" stroke-width="3"/>
+        <rect x="40" y="150" width="60" height="10" rx="3" fill="#94A3B8"/>
+        <polygon points="145 230 175 230 180 185 140 185" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="2"/>
+        <path d="M 160 185 Q 165 110 170 80 Q 155 130 160 185" fill="#065F46"/>
+        <path d="M 150 185 Q 140 120 145 95 Q 145 140 150 185" fill="#047857"/>
+        <path d="M 170 185 Q 180 130 178 105 Q 168 145 170 185" fill="#0F766E"/>
+        <path d="M 158 185 Q 152 140 155 120 Q 160 150 158 185" fill="#10B981"/>
+      </svg>`;
+
+      const svgModernLiving = `
+      <svg viewBox="0 0 450 360" width="100%" height="100%">
+        <ellipse cx="225" cy="310" rx="180" ry="35" fill="#E2E8F0" opacity="0.8"/>
+        <line x1="50" y1="310" x2="80" y2="150" stroke="#1E293B" stroke-width="2"/>
+        <line x1="110" y1="310" x2="80" y2="150" stroke="#1E293B" stroke-width="2"/>
+        <line x1="80" y1="310" x2="80" y2="150" stroke="#1E293B" stroke-width="1.5"/>
+        <path d="M 65 150 L 95 150 L 100 120 L 60 120 Z" fill="#475569"/>
+        <rect x="100" y="210" width="280" height="70" rx="10" fill="#94A3B8" stroke="#64748B" stroke-width="2"/>
+        <rect x="110" y="240" width="125" height="35" rx="5" fill="#CBD5E1"/>
+        <rect x="245" y="240" width="125" height="35" rx="5" fill="#CBD5E1"/>
+        <rect x="120" y="215" width="35" height="35" rx="4" fill="#F59E0B" transform="rotate(-10, 120, 215)"/>
+        <rect x="290" y="215" width="35" height="35" rx="4" fill="#10B981" transform="rotate(15, 290, 215)"/>
+        <rect x="120" y="280" width="10" height="20" fill="#334155" transform="skewX(-10)"/>
+        <rect x="350" y="280" width="10" height="20" fill="#334155" transform="skewX(10)"/>
+        <ellipse cx="235" cy="300" rx="70" ry="18" fill="#F5EBE6" stroke="#DDB892" stroke-width="2"/>
+        <polygon points="180 300 190 325 195 325" fill="#4A3728"/>
+        <polygon points="290 300 280 325 275 325" fill="#4A3728"/>
+        <path d="M 230 295 L 232 285 L 238 285 L 240 295 Z" fill="#64748B"/>
+        <circle cx="235" cy="280" r="6" fill="#10B981"/>
+      </svg>`;
+
+      const svgClassicLiving = `
+      <svg viewBox="0 0 450 360" width="100%" height="100%">
+        <ellipse cx="225" cy="310" rx="190" ry="40" fill="#991B1B" stroke="#F59E0B" stroke-width="2" opacity="0.85"/>
+        <ellipse cx="225" cy="310" rx="160" ry="28" fill="#7F1D1D" opacity="0.9"/>
+        <rect x="100" y="195" width="280" height="85" rx="14" fill="#582F0E" stroke="#3F2305" stroke-width="3"/>
+        <circle cx="130" cy="220" r="2" fill="#271302"/>
+        <circle cx="160" cy="220" r="2" fill="#271302"/>
+        <circle cx="190" cy="220" r="2" fill="#271302"/>
+        <circle cx="220" cy="220" r="2" fill="#271302"/>
+        <circle cx="250" cy="220" r="2" fill="#271302"/>
+        <circle cx="280" cy="220" r="2" fill="#271302"/>
+        <circle cx="310" cy="220" r="2" fill="#271302"/>
+        <circle cx="340" cy="220" r="2" fill="#271302"/>
+        <rect x="115" y="240" width="120" height="35" rx="6" fill="#663A15" stroke="#3F2305"/>
+        <rect x="245" y="240" width="120" height="35" rx="6" fill="#663A15" stroke="#3F2305"/>
+        <path d="M 85 205 Q 95 190 110 205 L 110 270 Q 95 285 85 270 Z" fill="#4E270A" stroke="#3F2305" stroke-width="1.5"/>
+        <path d="M 395 205 Q 385 190 370 205 L 370 270 Q 385 285 395 270 Z" fill="#4E270A" stroke="#3F2305" stroke-width="1.5"/>
+        <ellipse cx="120" cy="285" rx="6" ry="8" fill="#271302"/>
+        <ellipse cx="360" cy="285" rx="6" ry="8" fill="#271302"/>
+        <rect x="160" y="285" width="150" height="12" rx="2" fill="#3F2305"/>
+        <rect x="170" y="297" width="10" height="25" fill="#271302"/>
+        <rect x="290" y="297" width="10" height="25" fill="#271302"/>
+      </svg>`;
+
+      const svgMinimalistLiving = `
+      <svg viewBox="0 0 450 360" width="100%" height="100%">
+        <ellipse cx="225" cy="315" rx="150" ry="25" fill="#E2E8F0" opacity="0.6"/>
+        <rect x="120" y="225" width="240" height="60" rx="3" fill="#E8E5E0" stroke="#D1CFC9" stroke-width="2"/>
+        <rect x="125" y="250" width="112" height="32" fill="#F4F2EE"/>
+        <rect x="243" y="250" width="112" height="32" fill="#F4F2EE"/>
+        <rect x="135" y="235" width="45" height="15" rx="7" fill="#94A3B8"/>
+        <rect x="140" y="285" width="20" height="10" fill="#E2E8F0"/>
+        <rect x="320" y="285" width="20" height="10" fill="#E2E8F0"/>
+        <circle cx="240" cy="310" r="45" fill="#E7C5A3" opacity="0.95"/>
+        <circle cx="240" cy="310" r="42" fill="#F3D8BD"/>
+        <polygon points="380 320 410 320 415 275 375 275" fill="#E2E8F0"/>
+        <path d="M 395 275 Q 410 240 425 235 Q 405 260 395 275" fill="#14532D"/>
+        <path d="M 395 275 Q 380 230 365 220 Q 385 255 395 275" fill="#15803D"/>
+        <path d="M 395 275 Q 395 210 405 190 Q 405 240 395 275" fill="#166534"/>
+      </svg>`;
+
+      const svgModernKitchen = `
+      <svg viewBox="0 0 250 300" width="100%" height="100%">
+        <line x1="70" y1="0" x2="70" y2="70" stroke="#1E293B" stroke-width="2"/>
+        <path d="M 55 70 L 85 70 C 85 85 55 85 55 70 Z" fill="#0F172A"/>
+        <polygon points="70 82 50 140 90 140" fill="yellow" opacity="0.1"/>
+        <line x1="180" y1="0" x2="180" y2="70" stroke="#1E293B" stroke-width="2"/>
+        <path d="M 165 70 L 195 70 C 195 85 165 85 165 70 Z" fill="#0F172A"/>
+        <polygon points="180 82 160 140 200 140" fill="yellow" opacity="0.1"/>
+        <ellipse cx="80" cy="180" rx="22" ry="5" fill="#A16207"/>
+        <line x1="70" y1="183" x2="62" y2="280" stroke="#334155" stroke-width="2.5"/>
+        <line x1="90" y1="183" x2="98" y2="280" stroke="#334155" stroke-width="2.5"/>
+        <line x1="80" y1="183" x2="80" y2="280" stroke="#334155" stroke-width="1.5"/>
+        <line x1="65" y1="240" x2="95" y2="240" stroke="#334155" stroke-width="2"/>
+        <ellipse cx="170" cy="180" rx="22" ry="5" fill="#A16207"/>
+        <line x1="160" y1="183" x2="152" y2="280" stroke="#334155" stroke-width="2.5"/>
+        <line x1="180" y1="183" x2="188" y2="280" stroke="#334155" stroke-width="2.5"/>
+        <line x1="170" y1="183" x2="170" y2="280" stroke="#334155" stroke-width="1.5"/>
+        <line x1="155" y1="240" x2="185" y2="240" stroke="#334155" stroke-width="2"/>
+      </svg>`;
+
+      const svgClassicKitchen = `
+      <svg viewBox="0 0 250 300" width="100%" height="100%">
+        <line x1="125" y1="0" x2="125" y2="50" stroke="#854D0E" stroke-width="3"/>
+        <path d="M 90 50 L 160 50 Q 125 90 90 50 Z" fill="none" stroke="#854D0E" stroke-width="3"/>
+        <circle cx="100" cy="45" r="5" fill="#FEF08A"/>
+        <circle cx="125" cy="40" r="5" fill="#FEF08A"/>
+        <circle cx="150" cy="45" r="5" fill="#FEF08A"/>
+        <rect x="62" y="170" width="36" height="8" rx="2" fill="#451A03"/>
+        <line x1="65" y1="178" x2="58" y2="280" stroke="#451A03" stroke-width="3.5"/>
+        <line x1="95" y1="178" x2="102" y2="280" stroke="#451A03" stroke-width="3.5"/>
+        <rect x="68" y="235" width="24" height="6" fill="#3B1301"/>
+        <rect x="152" y="170" width="36" height="8" rx="2" fill="#451A03"/>
+        <line x1="155" y1="178" x2="148" y2="280" stroke="#451A03" stroke-width="3.5"/>
+        <line x1="185" y1="178" x2="192" y2="280" stroke="#451A03" stroke-width="3.5"/>
+        <rect x="158" y="235" width="24" height="6" fill="#3B1301"/>
+      </svg>`;
+
+      const svgMinimalistKitchen = `
+      <svg viewBox="0 0 250 300" width="100%" height="100%">
+        <ellipse cx="80" cy="185" rx="20" ry="3" fill="none" stroke="#475569" stroke-width="2"/>
+        <line x1="68" y1="186" x2="62" y2="280" stroke="#475569" stroke-width="1.5"/>
+        <line x1="92" y1="186" x2="98" y2="280" stroke="#475569" stroke-width="1.5"/>
+        <line x1="64" y1="250" x2="96" y2="250" stroke="#475569" stroke-width="1"/>
+        <ellipse cx="170" cy="185" rx="20" ry="3" fill="none" stroke="#475569" stroke-width="2"/>
+        <line x1="158" y1="186" x2="152" y2="280" stroke="#475569" stroke-width="1.5"/>
+        <line x1="182" y1="186" x2="188" y2="280" stroke="#475569" stroke-width="1.5"/>
+        <line x1="154" y1="250" x2="186" y2="250" stroke="#475569" stroke-width="1"/>
+        <path d="M 215 180 L 220 160 L 225 180 Z" fill="#F1F5F9" stroke="#94A3B8" stroke-width="1"/>
+        <path d="M 220 160 Q 210 130 225 110" fill="none" stroke="#475569" stroke-width="1.5"/>
+        <path d="M 220 160 Q 230 140 220 125" fill="none" stroke="#475569" stroke-width="1.5"/>
+      </svg>`;
+
+      if (sceneId === "entrance") {
+        if (style === "modern") return `<div style="position: absolute; left: 45%; top: 35%; width: 220px; height: 280px; z-index: 25; pointer-events: none;">${svgModernEntrance}</div>`;
+        if (style === "classic") return `<div style="position: absolute; left: 45%; top: 35%; width: 220px; height: 280px; z-index: 25; pointer-events: none;">${svgClassicEntrance}</div>`;
+        if (style === "minimalist") return `<div style="position: absolute; left: 45%; top: 40%; width: 220px; height: 280px; z-index: 25; pointer-events: none;">${svgMinimalistEntrance}</div>`;
+      } else if (sceneId === "living") {
+        if (style === "modern") return `<div style="position: absolute; left: 55%; top: 35%; width: 420px; height: 340px; z-index: 25; pointer-events: none;">${svgModernLiving}</div>`;
+        if (style === "classic") return `<div style="position: absolute; left: 55%; top: 35%; width: 420px; height: 340px; z-index: 25; pointer-events: none;">${svgClassicLiving}</div>`;
+        if (style === "minimalist") return `<div style="position: absolute; left: 55%; top: 38%; width: 400px; height: 320px; z-index: 25; pointer-events: none;">${svgMinimalistLiving}</div>`;
+      } else if (sceneId === "kitchen") {
+        if (style === "modern") return `<div style="position: absolute; left: 35%; top: 30%; width: 240px; height: 300px; z-index: 25; pointer-events: none;">${svgModernKitchen}</div>`;
+        if (style === "classic") return `<div style="position: absolute; left: 35%; top: 30%; width: 240px; height: 300px; z-index: 25; pointer-events: none;">${svgClassicKitchen}</div>`;
+        if (style === "minimalist") return `<div style="position: absolute; left: 35%; top: 30%; width: 240px; height: 300px; z-index: 25; pointer-events: none;">${svgMinimalistKitchen}</div>`;
+      }
+      return "";
+    }
+
+    function loadPanoScene(sceneId) {
+      activePanoScene = sceneId;
+      const scene = panoScenes[sceneId];
+      if (!scene) return;
+
+      const bg = document.getElementById("pano-bg");
+      const label = document.getElementById("pano-viewpoint-label");
+      const container = document.getElementById("pano-hotspots-container");
+      if (!bg || !label || !container) return;
+
+      // Blur animation
+      bg.style.filter = "brightness(0.3) blur(6px)";
+      
+      setTimeout(() => {
+        bg.style.backgroundImage = `url('${scene.img}')`;
+        label.textContent = scene.label;
+
+        // Render hotspots
+        container.innerHTML = scene.hotspots.map(h => `
+          <div class="panoramic-hotspot" style="top: ${h.y}; left: ${h.x};" onclick="loadPanoScene('${h.target}')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            ${h.text}
+          </div>
+        `).join('');
+
+        renderStagingFurniture();
+        const stagingContainer = document.getElementById("pano-staging-furniture-container");
+        if (stagingContainer) {
+          stagingContainer.style.transform = `translateX(${currentPanoOffset}px)`;
+        }
+
+        bg.style.filter = "brightness(0.9) blur(0px)";
+      }, 200);
+    }
+
+    function setupPanoDrag() {
+      const viewer = document.getElementById("panoramic-tour-box");
+      const bg = document.getElementById("pano-bg");
+      const needle = document.getElementById("compass-needle");
+      if (!viewer || !bg) return;
+
+      const onStart = (clientX) => {
+        isDraggingPano = true;
+        startPanoX = clientX - currentPanoOffset;
+      };
+
+      const onMove = (clientX) => {
+        if (!isDraggingPano) return;
+        const delta = clientX - startPanoX;
+        const maxOffset = viewer.clientWidth * 2;
+        currentPanoOffset = Math.max(-maxOffset, Math.min(0, delta));
+        bg.style.transform = `translateX(${currentPanoOffset}px)`;
+
+        const stagingContainer = document.getElementById("pano-staging-furniture-container");
+        if (stagingContainer) {
+          stagingContainer.style.transform = `translateX(${currentPanoOffset}px)`;
+        }
+
+        const percentage = -currentPanoOffset / maxOffset;
+        currentRotation = percentage * 360;
+        if (needle) {
+          needle.style.transform = `translate(-50%, -50%) rotate(${currentRotation}deg)`;
+        }
+      };
+
+      viewer.addEventListener("mousedown", (e) => onStart(e.clientX));
+      document.addEventListener("mouseup", () => isDraggingPano = false);
+      viewer.addEventListener("mousemove", (e) => onMove(e.clientX));
+
+      viewer.addEventListener("touchstart", (e) => onStart(e.touches[0].clientX));
+      document.addEventListener("touchend", () => isDraggingPano = false);
+      viewer.addEventListener("touchmove", (e) => onMove(e.touches[0].clientX));
+    }
+
+    // ==========================================================================
+    // 12. SQUARE YARDS VASTU COMPASS INITIALIZATION
+    // ==========================================================================
+    function initVastuCompass(prop) {
+      let hash = 0;
+      for (let i = 0; i < prop.id.length; i++) {
+        hash += prop.id.charCodeAt(i);
+      }
+      const score = (7.8 + (hash % 19) * 0.1).toFixed(1);
+      document.getElementById("vastu-rating-score").textContent = score;
+
+      const textEl = document.getElementById("vastu-rating-text");
+      const descEl = document.getElementById("vastu-rating-desc");
+      const ratingScoreVal = parseFloat(score);
+
+      // Randomize directions compass placements based on score
+      const entDot = document.getElementById("vastu-dot-entrance");
+      const bedDot = document.getElementById("vastu-dot-bedroom");
+      const kitDot = document.getElementById("vastu-dot-kitchen");
+
+      if (ratingScoreVal >= 9.0) {
+        textEl.textContent = "Fully Vastu Compliant (Premium Harmony)";
+        textEl.style.color = "var(--success)";
+        descEl.textContent = `Excellent alignment! Primary entrance faces North-East (NE) perfectly welcoming positive energy flow. Master bedroom is aligned exactly with the South-West (SW) prosperity quadrant, and kitchen is situated in the South-East (SE) fire sector.`;
+        if (entDot) entDot.style.cssText = "background:#10b981; top:30px; right:30px;";
+        if (bedDot) bedDot.style.cssText = "background:#10b981; bottom:30px; left:30px;";
+        if (kitDot) kitDot.style.cssText = "background:#10b981; bottom:30px; right:30px;";
+      } else if (ratingScoreVal >= 8.2) {
+        textEl.textContent = "Vastu Compliant (Strong Energy Flow)";
+        textEl.style.color = "var(--primary)";
+        descEl.textContent = `Very good energy balance. Primary entrance is North/North-East (N/NE) oriented. Master bedroom sits in the South-West (SW) quadrant. Kitchen is positioned in the North-West (NW) secondary kitchen quadrant.`;
+        if (entDot) entDot.style.cssText = "background:#10b981; top:15px; right:90px;";
+        if (bedDot) bedDot.style.cssText = "background:#10b981; bottom:30px; left:30px;";
+        if (kitDot) kitDot.style.cssText = "background:#f59e0b; top:30px; left:30px;";
+      } else {
+        textEl.textContent = "Moderately Vastu Compliant (Balanced)";
+        textEl.style.color = "var(--secondary)";
+        descEl.textContent = `Balanced layout orientation. Entrance is East-facing (E) which is auspicious. Kitchen sits in the South-East (SE) fire quadrant, and master bedroom is situated in the South (S) sector. Highly comfortable living energy.`;
+        if (entDot) entDot.style.cssText = "background:#10b981; top:90px; right:15px;";
+        if (bedDot) bedDot.style.cssText = "background:#f59e0b; bottom:15px; right:90px;";
+        if (kitDot) kitDot.style.cssText = "background:#10b981; bottom:30px; right:30px;";
+      }
+
+      // Save overall text and desc for reset
+      const overallText = textEl.textContent;
+      const overallColor = textEl.style.color;
+      const overallDesc = descEl.textContent;
+
+      window.resetVastuView = function() {
+        textEl.textContent = overallText;
+        textEl.style.color = overallColor;
+        descEl.textContent = overallDesc;
+        const backLink = document.getElementById("vastu-back-link");
+        if (backLink) backLink.style.display = "none";
+        
+        // Remove scale-up effect from all dots
+        [entDot, bedDot, kitDot].forEach(dot => {
+          if (dot) {
+            dot.style.transform = "";
+            dot.style.boxShadow = "";
+          }
+        });
+      };
+
+      function highlightDot(activeDot) {
+        [entDot, bedDot, kitDot].forEach(dot => {
+          if (dot) {
+            if (dot === activeDot) {
+              dot.style.transform = "scale(1.4)";
+              dot.style.boxShadow = "0 0 10px var(--primary)";
+            } else {
+              dot.style.transform = "";
+              dot.style.boxShadow = "";
+            }
+          }
+        });
+        const backLink = document.getElementById("vastu-back-link");
+        if (backLink) backLink.style.display = "block";
+      }
+
+      if (entDot) {
+        entDot.style.cursor = "pointer";
+        entDot.onclick = function() {
+          highlightDot(entDot);
+          if (ratingScoreVal >= 9.0) {
+            textEl.textContent = "🚪 Entrance: North-East (Excellent)";
+            textEl.style.color = "var(--success)";
+            descEl.textContent = "North-East (Eshanya) is governed by Lord Shiva and represents water/wisdom. An entrance here invites maximum positive morning sunlight, cosmic energies, and clarity of mind.";
+          } else if (ratingScoreVal >= 8.2) {
+            textEl.textContent = "🚪 Entrance: North/North-East (Excellent)";
+            textEl.style.color = "var(--success)";
+            descEl.textContent = "A North/North-East entrance is highly auspicious, governed by Kubera (wealth) and Soma (peace). It draws massive financial growth, professional success, and mental tranquility.";
+          } else {
+            textEl.textContent = "🚪 Entrance: East (Excellent)";
+            textEl.style.color = "var(--success)";
+            descEl.textContent = "East (Purva) is governed by Lord Indra and the Sun. An entrance here invites new opportunities, recognition, excellent health, and vibrant social connectivity.";
+          }
+        };
+      }
+
+      if (bedDot) {
+        bedDot.style.cursor = "pointer";
+        bedDot.onclick = function() {
+          highlightDot(bedDot);
+          if (ratingScoreVal >= 9.0) {
+            textEl.textContent = "🛏️ Master Bedroom: South-West (Excellent)";
+            textEl.style.color = "var(--success)";
+            descEl.textContent = "South-West (Nairrutya) is governed by Lord Nirruti and represents earth/stability. Siting the master bedroom here ensures the head of house enjoys maximum authority, stability, and family harmony.";
+          } else if (ratingScoreVal >= 8.2) {
+            textEl.textContent = "🛏️ Master Bedroom: South-West (Excellent)";
+            textEl.style.color = "var(--success)";
+            descEl.textContent = "South-West orientation is the absolute best for the master bedroom. It grounds the residents, reduces stress, and fosters long-term financial security.";
+          } else {
+            textEl.textContent = "🛏️ Master Bedroom: South (Good)";
+            textEl.style.color = "var(--primary)";
+            descEl.textContent = "A South-facing bedroom is highly relaxing and promotes deep sleep, stress relief, and builds strong public reputation.";
+          }
+        };
+      }
+
+      if (kitDot) {
+        kitDot.style.cursor = "pointer";
+        kitDot.onclick = function() {
+          highlightDot(kitDot);
+          if (ratingScoreVal >= 9.0) {
+            textEl.textContent = "🍳 Kitchen: South-East (Excellent)";
+            textEl.style.color = "var(--success)";
+            descEl.textContent = "South-East (Agneya) is governed by Lord Agni (Fire). Positioning the kitchen here balances the fire element, promoting household health, vitality, and wealth.";
+          } else if (ratingScoreVal >= 8.2) {
+            textEl.textContent = "🍳 Kitchen: North-West (Good)";
+            textEl.style.color = "var(--primary)";
+            descEl.textContent = "North-West (Vayavya) is governed by the wind element. A kitchen here is a very good alternative, encouraging smooth communication, guest satisfaction, and continuous prosperity.";
+          } else {
+            textEl.textContent = "🍳 Kitchen: South-East (Excellent)";
+            textEl.style.color = "var(--success)";
+            descEl.textContent = "South-East orientation is the perfect zone for Agni. It ensures balanced energy, improves digestional health of the family, and wards off financial issues.";
+          }
+        };
+      }
+    }
+
+    // ==========================================================================
+    // 13. 99ACRES DYNAMIC LOCALITY PRICE CHART
+    // ==========================================================================
+    let currentTrendMetric = "capital";
+
+    function switchTrendMetric(metric) {
+      currentTrendMetric = metric;
+      document.getElementById("trend-tab-capital").classList.toggle("active", metric === "capital");
+      document.getElementById("trend-tab-rent").classList.toggle("active", metric === "rent");
+      updateTrendChart();
+    }
+
+    function initLocalityTrends(prop) {
+      // Expose switch function
+      window.switchTrendMetric = switchTrendMetric;
+      updateTrendChart();
+
+      // Set up interactive glassmorphic tooltip
+      let tooltip = document.getElementById("chart-tooltip");
+      if (!tooltip) {
+        tooltip = document.createElement("div");
+        tooltip.id = "chart-tooltip";
+        tooltip.className = "chart-tooltip";
+        document.body.appendChild(tooltip);
+      }
+
+      const svg = document.getElementById("trend-svg");
+      if (svg && !svg.dataset.tooltipBound) {
+        svg.dataset.tooltipBound = "true";
+
+        svg.addEventListener("mouseover", (e) => {
+          if (e.target.classList.contains("trend-dot")) {
+            const dot = e.target;
+            const idx = parseInt(dot.id.split("-")[1]);
+            const rect = dot.getBoundingClientRect();
+            
+            if (!window.currentChartValues || window.currentChartValues.length <= idx) return;
+
+            const val = window.currentChartValues[idx];
+            let valStr = "";
+            let yoyStr = "";
+            const years = ["2022", "2023", "2024", "2025", "2026 (Est)"];
+
+            if (currentTrendMetric === "capital") {
+              valStr = `₹${val.toLocaleString('en-IN')}/Sq.Ft`;
+              if (idx === 0) {
+                yoyStr = "Baseline Year";
+              } else {
+                const prevVal = window.currentChartValues[idx - 1];
+                const yoy = (((val - prevVal) / prevVal) * 100).toFixed(1);
+                yoyStr = `+${yoy}% YoY Appreciation`;
+              }
+            } else {
+              valStr = `${val}% Yield`;
+              if (idx === 0) {
+                yoyStr = "Baseline Year";
+              } else {
+                const prevVal = window.currentChartValues[idx - 1];
+                const yoy = (((val - prevVal) / prevVal) * 100).toFixed(1);
+                yoyStr = `+${yoy}% YoY Growth`;
+              }
+            }
+
+            tooltip.innerHTML = `
+              <div style="font-weight: 700; font-size: 11px; color: var(--primary); margin-bottom: 2px;">${years[idx]}</div>
+              <div style="font-weight: 800; font-size: 13px; color: white;">${valStr}</div>
+              <div style="color: var(--success); font-weight: 700; font-size: 10px; margin-top: 2px;">${yoyStr}</div>
+            `;
+
+            tooltip.style.left = `${rect.left + window.scrollX + rect.width / 2}px`;
+            tooltip.style.top = `${rect.top + window.scrollY}px`;
+            tooltip.classList.add("active");
+          }
+        });
+
+        svg.addEventListener("mouseout", (e) => {
+          if (e.target.classList.contains("trend-dot")) {
+            tooltip.classList.remove("active");
+          }
+        });
+      }
+    }
+
+    function updateTrendChart() {
+      if (!activeProperty) return;
+      const prop = activeProperty;
+
+      const baselines = {
+        "Lucknow": { sell: 5000, rent: 15 },
+        "Noida": { sell: 6500, rent: 20 },
+        "Varanasi": { sell: 4500, rent: 12 },
+        "Jhansi": { sell: 3500, rent: 9 },
+        "Orai": { sell: 2500, rent: 7 },
+        "Jalaun": { sell: 2200, rent: 6 },
+        "Kalpi": { sell: 2000, rent: 5 },
+        "Konch": { sell: 1800, rent: 5 }
+      };
+      const defaultBaseline = { sell: 3000, rent: 10 };
+      const baselineSet = baselines[prop.city] || defaultBaseline;
+      const baseRate = baselineSet.sell;
+
+      const line = document.getElementById("trend-line");
+      const summaryEl = document.getElementById("trend-summary-text");
+      if (!line) return;
+
+      let values = [];
+      let yMin, yMax, yMid1, yMid2;
+      
+      if (currentTrendMetric === "capital") {
+        const val22 = Math.round(baseRate * 0.82);
+        const val23 = Math.round(baseRate * 0.90);
+        const val24 = Math.round(baseRate * 1.00);
+        const val25 = Math.round(baseRate * 1.09);
+        const val26 = Math.round(baseRate * 1.18);
+        values = [val22, val23, val24, val25, val26];
+
+        yMin = Math.round(baseRate * 0.70);
+        yMax = Math.round(baseRate * 1.30);
+        yMid2 = Math.round(yMin + (yMax - yMin) * 0.33);
+        yMid1 = Math.round(yMin + (yMax - yMin) * 0.66);
+
+        document.getElementById("trend-y-max").textContent = `₹${yMax.toLocaleString('en-IN')}`;
+        document.getElementById("trend-y-mid1").textContent = `₹${yMid1.toLocaleString('en-IN')}`;
+        document.getElementById("trend-y-mid2").textContent = `₹${yMid2.toLocaleString('en-IN')}`;
+        document.getElementById("trend-y-min").textContent = `₹${yMin.toLocaleString('en-IN')}`;
+
+        summaryEl.textContent = `📈 Capital appreciation in ${prop.locality} shows a +43.9% growth rate over the last 5 years.`;
+      } else {
+        const isCommercial = prop.property_type === "commercial";
+        const baseYield = isCommercial ? 7.2 : 3.8;
+        
+        const val22 = parseFloat((baseYield * 0.92).toFixed(2));
+        const val23 = parseFloat((baseYield * 0.96).toFixed(2));
+        const val24 = parseFloat((baseYield * 1.00).toFixed(2));
+        const val25 = parseFloat((baseYield * 1.03).toFixed(2));
+        const val26 = parseFloat((baseYield * 1.06).toFixed(2));
+        values = [val22, val23, val24, val25, val26];
+
+        yMin = parseFloat((baseYield * 0.8).toFixed(1));
+        yMax = parseFloat((baseYield * 1.2).toFixed(1));
+        yMid2 = parseFloat((yMin + (yMax - yMin) * 0.33).toFixed(1));
+        yMid1 = parseFloat((yMin + (yMax - yMin) * 0.66).toFixed(1));
+
+        document.getElementById("trend-y-max").textContent = `${yMax}%`;
+        document.getElementById("trend-y-mid1").textContent = `${yMid1}%`;
+        document.getElementById("trend-y-mid2").textContent = `${yMid2}%`;
+        document.getElementById("trend-y-min").textContent = `${yMin}%`;
+
+        summaryEl.textContent = `📊 Stable rental yield averaging ${baseYield}% per annum, ideal for passive cash flow assets.`;
+      }
+
+      window.currentChartValues = values;
+
+      const mapValueToY = (val) => {
+        const ratio = (val - yMin) / (yMax - yMin);
+        return 130 - (ratio * 120);
+      };
+
+      const xCoords = [40, 150, 260, 370, 480];
+      const points = values.map((val, idx) => ({
+        x: xCoords[idx],
+        y: mapValueToY(val)
+      }));
+
+      const pathD = `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y} L ${points[2].x} ${points[2].y} L ${points[3].x} ${points[3].y} L ${points[4].x} ${points[4].y}`;
+      line.setAttribute("d", pathD);
+
+      points.forEach((pt, idx) => {
+        const dot = document.getElementById(`dot-${idx}`);
+        if (dot) {
+          dot.setAttribute("cx", pt.x);
+          dot.setAttribute("cy", pt.y);
+          dot.setAttribute("title", `${currentTrendMetric === 'capital' ? '₹' + values[idx].toLocaleString('en-IN') : values[idx] + '%'}`);
+        }
+      });
+    }
+
+    // ==========================================================================
+    // 14. EMI & HOME LOAN ADVISOR TABS AND CALCULATIONS
+    // ==========================================================================
+    function switchCalcTab(tab) {
+      const emiPanel = document.getElementById("calc-subpanel-emi");
+      const loanPanel = document.getElementById("calc-subpanel-loan");
+      const emiTab = document.getElementById("calc-tab-emi");
+      const loanTab = document.getElementById("calc-tab-loan");
+
+      if (!emiPanel || !loanPanel || !emiTab || !loanTab) return;
+
+      if (tab === "emi") {
+        emiPanel.style.display = "block";
+        loanPanel.style.display = "none";
+        emiTab.classList.add("active");
+        loanTab.classList.remove("active");
+      } else if (tab === "loan") {
+        emiPanel.style.display = "none";
+        loanPanel.style.display = "block";
+        emiTab.classList.remove("active");
+        loanTab.classList.add("active");
+        recalcLoanEligibility();
+      }
+    }
+
+    function recalcLoanEligibility() {
+      if (!activeProperty) return;
+      const prop = activeProperty;
+
+      const salaryInput = document.getElementById("loan-slide-salary");
+      const debtsInput = document.getElementById("loan-slide-debts");
+
+      const salaryVal = parseFloat(salaryInput.value);
+      const debtsVal = parseFloat(debtsInput.value);
+
+      document.getElementById("loan-val-salary").textContent = `₹${salaryVal.toLocaleString('en-IN')}`;
+      document.getElementById("loan-val-debts").textContent = `₹${debtsVal.toLocaleString('en-IN')}`;
+
+      const maxAllowedEMI = Math.max(0, (salaryVal * 0.50) - debtsVal);
+
+      const annualRate = 8.5;
+      const tenureYears = 20;
+      const monthlyRate = (annualRate / 12) / 100;
+      const totalMonths = tenureYears * 12;
+      
+      const factor = (Math.pow(1 + monthlyRate, totalMonths) - 1) / (monthlyRate * Math.pow(1 + monthlyRate, totalMonths));
+      const maxLoan = maxAllowedEMI * factor;
+
+      document.getElementById("loan-result-eligibility").textContent = formatIndianCurrency(maxLoan);
+
+      const requiredLoan = prop.price * 0.80;
+      const progressFill = document.getElementById("loan-budget-fill");
+      const budgetBadge = document.getElementById("loan-budget-badge");
+      const budgetDesc = document.getElementById("loan-budget-desc");
+
+      let ratio = requiredLoan > 0 ? (maxLoan / requiredLoan) : 1;
+      let percent = Math.min(100, Math.round(ratio * 100));
+
+      if (progressFill && budgetBadge && budgetDesc) {
+        progressFill.style.width = `${percent}%`;
+        
+        budgetBadge.className = "budget-status-badge";
+
+        if (ratio >= 1.0) {
+          budgetBadge.classList.add("affordable");
+          budgetBadge.textContent = "Easily Affordable";
+          progressFill.style.backgroundColor = "#10b981";
+          budgetDesc.textContent = `Excellent! Your borrowing capacity (${formatIndianCurrency(maxLoan)}) comfortably exceeds the required loan of ${formatIndianCurrency(requiredLoan)} (assuming 20% down payment).`;
+        } else if (ratio >= 0.75) {
+          budgetBadge.classList.add("stretch");
+          budgetBadge.textContent = "Comfortable Stretch";
+          progressFill.style.backgroundColor = "#f59e0b";
+          budgetDesc.textContent = `A bit tight! Your borrowing capacity is slightly lower than the required loan of ${formatIndianCurrency(requiredLoan)}. Consider raising your down payment to bridge the gap.`;
+        } else {
+          budgetBadge.classList.add("over");
+          budgetBadge.textContent = "Over-Budget";
+          progressFill.style.backgroundColor = "#ef4444";
+          budgetDesc.textContent = `Action Required! This property requires a loan of ${formatIndianCurrency(requiredLoan)}, which exceeds your safe borrowing limit. We recommend looking for properties under ${formatIndianCurrency(maxLoan / 0.8)}.`;
+        }
+      }
+    }
+
+    function formatIndianCurrency(amount) {
+      if (amount >= 10000000) {
+        return `₹${(amount / 10000000).toFixed(2)} Crores`;
+      } else if (amount >= 100000) {
+        return `₹${(amount / 100000).toFixed(2)} Lakhs`;
+      } else {
+        return `₹${Math.round(amount).toLocaleString('en-IN')}`;
+      }
+    }
+
+    // ==========================================================================
+    // 15. INTERACTIVE 2D FLOOR PLAN VISUALIZER
+    // ==========================================================================
+    let activeFurnishingMode = "unfurnished";
+
+    function initFloorPlan(prop) {
+      toggleFurnishing("unfurnished");
+      
+      window.toggleFurnishing = toggleFurnishing;
+      window.toggleCustomFurniture = toggleCustomFurniture;
+      window.showRoomDetail = showRoomDetail;
+      window.hideRoomDetail = hideRoomDetail;
+    }
+
+    function toggleFurnishing(mode) {
+      activeFurnishingMode = mode;
+      
+      document.getElementById("floor-tab-unfurnished").classList.toggle("active", mode === "unfurnished");
+      document.getElementById("floor-tab-furnished").classList.toggle("active", mode === "furnished");
+      document.getElementById("floor-tab-custom").classList.toggle("active", mode === "custom");
+
+      const toolbox = document.getElementById("floor-planner-toolbox");
+      if (toolbox) {
+        toolbox.style.display = mode === "custom" ? "block" : "none";
+      }
+
+      const sofa = document.getElementById("furn-sofa");
+      const tv = document.getElementById("furn-tv");
+      const bed = document.getElementById("furn-bed");
+      const dining = document.getElementById("furn-dining");
+      const plant = document.getElementById("furn-plant");
+
+      if (mode === "unfurnished") {
+        if (sofa) sofa.style.display = "none";
+        if (tv) tv.style.display = "none";
+        if (bed) bed.style.display = "none";
+        if (dining) dining.style.display = "none";
+        if (plant) plant.style.display = "none";
+      } else if (mode === "furnished") {
+        if (sofa) sofa.style.display = "block";
+        if (tv) tv.style.display = "block";
+        if (bed) bed.style.display = "block";
+        if (dining) dining.style.display = "block";
+        if (plant) plant.style.display = "block";
+      } else if (mode === "custom") {
+        document.querySelectorAll("#floor-planner-toolbox input[type='checkbox']").forEach(cb => {
+          cb.checked = false;
+        });
+        if (sofa) sofa.style.display = "none";
+        if (tv) tv.style.display = "none";
+        if (bed) bed.style.display = "none";
+        if (dining) dining.style.display = "none";
+        if (plant) plant.style.display = "none";
+      }
+    }
+
+    function toggleCustomFurniture(item, visible) {
+      const el = document.getElementById(`furn-${item}`);
+      if (el) {
+        el.style.display = visible ? "block" : "none";
+      }
+    }
+
+    function showRoomDetail(room) {
+      const titleEl = document.getElementById("floor-room-title");
+      const descEl = document.getElementById("floor-room-desc");
+      if (!titleEl || !descEl) return;
+
+      const details = {
+        living: {
+          title: "🛋️ Living Room | 15' x 12' (180 Sq.Ft)",
+          desc: "Features large double-glazed windows for ample natural light. Complete with premium vitrified flooring, television cable outlets, and smart light integration panels."
+        },
+        bedroom: {
+          title: "🛏️ Master Bedroom | 14' x 12' (168 Sq.Ft)",
+          desc: "South-West quadrant aligned for optimal energy stability (Vastu compliant). Complete with modular wardrobe cavity, pre-installed AC conduits, and attached balcony door."
+        },
+        kitchen: {
+          title: "🍳 Modular Kitchen | 10' x 8' (80 Sq.Ft)",
+          desc: "South-East aligned fire quadrant. Complete with black granite countertops, chimney vent exhaust pipes, refrigerator spacing, and premium plumbing."
+        },
+        bathroom: {
+          title: "🚿 Modern Bathroom | 7' x 6' (42 Sq.Ft)",
+          desc: "Designed with anti-skid floor tiling, glazed wall borders, instant water heater geyser lines, and high-efficiency ventilation frames."
+        },
+        balcony: {
+          title: "🌿 Spacious Balcony | 8' x 4' (32 Sq.Ft)",
+          desc: "Offers panoramic outdoor neighborhood scenery. Equipped with heavy-gauge safety railings, washer utility taps, and clean outdoor ceramic tiling."
+        }
+      };
+
+      const roomData = details[room];
+      if (roomData) {
+        titleEl.textContent = roomData.title;
+        descEl.textContent = roomData.desc;
+        
+        const rect = document.getElementById(`room-${room}`);
+        if (rect) {
+          rect.style.fill = "var(--primary)";
+          rect.style.fillOpacity = "0.15";
+        }
+      }
+    }
+
+    // Reset room highlights
+    function hideRoomDetail() {
+      const titleEl = document.getElementById("floor-room-title");
+      const descEl = document.getElementById("floor-room-desc");
+      if (!titleEl || !descEl) return;
+
+      titleEl.textContent = "Hover over Rooms";
+      descEl.textContent = "Hover over any room quadrant on the floor layout to inspect exact dimension indices, carpet area breakdowns, and ventilation statuses.";
+
+      document.querySelectorAll(".floor-room").forEach(rect => {
+        rect.style.fill = "";
+        rect.style.fillOpacity = "";
+      });
+    }
+
+    // ==========================================================================
+    // 16. DIRECT OWNER SITE VISIT SCHEDULER & PASS GENERATOR
+    // ==========================================================================
+    let selectedVisitType = "physical";
+    let selectedVisitDate = "";
+    let selectedVisitTime = "02:00 PM - 04:00 PM";
+
+    function setVisitType(type) {
+      selectedVisitType = type;
+      document.getElementById("visit-type-physical").classList.toggle("active", type === "physical");
+      document.getElementById("visit-type-video").classList.toggle("active", type === "video");
+    }
+
+    function initSchedulerDates() {
+      const container = document.getElementById("scheduler-date-strip");
+      if (!container) return;
+
+      const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      
+      let html = "";
+      
+      for (let i = 0; i < 7; i++) {
+        const d = new Date();
+        d.setDate(d.getDate() + i);
+        
+        const dayName = daysOfWeek[d.getDay()];
+        const monthName = months[d.getMonth()];
+        const dayNum = d.getDate();
+        const fullDateStr = `${monthName} ${dayNum}, ${d.getFullYear()}`;
+        
+        if (i === 0) selectedVisitDate = fullDateStr;
+
+        html += `
+          <div class="date-card ${i === 0 ? 'active' : ''}" onclick="selectSchedulerDate(this, '${fullDateStr}')">
+            <span class="date-day">${dayName}</span>
+            <span class="date-num">${dayNum}</span>
+          </div>
+        `;
+      }
+      
+      container.innerHTML = html;
+      
+      window.setVisitType = setVisitType;
+      window.selectSchedulerDate = selectSchedulerDate;
+      window.selectTimeSlot = selectTimeSlot;
+      window.triggerBookSiteVisit = triggerBookSiteVisit;
+      window.printVisitPass = printVisitPass;
+      window.closeVisitPassModal = closeVisitPassModal;
+    }
+
+    function selectSchedulerDate(el, dateStr) {
+      document.querySelectorAll(".date-card").forEach(card => card.classList.remove("active"));
+      el.classList.add("active");
+      selectedVisitDate = dateStr;
+    }
+
+    function selectTimeSlot(idx, slotText) {
+      document.querySelectorAll("#scheduler-time-grid button").forEach(btn => btn.classList.remove("active"));
+      document.getElementById(`slot-${idx}`).classList.add("active");
+      selectedVisitTime = slotText;
+    }
+
+    function triggerBookSiteVisit() {
+      if (!activeProperty) return;
+
+      const nameInput = document.getElementById("enq-name");
+      const phoneInput = document.getElementById("enq-phone");
+      const emailInput = document.getElementById("enq-email");
+
+      const visitorName = nameInput ? nameInput.value.trim() : "";
+      const visitorPhone = phoneInput ? phoneInput.value.trim() : "";
+      const visitorEmail = emailInput ? emailInput.value.trim() : "";
+
+      if (!visitorName || !visitorPhone) {
+        showToast("Please fill out Name & Phone in the 'Contact Property Owner' card first!", "warning");
+        if (nameInput) nameInput.focus();
+        const sidebar = document.querySelector("aside");
+        if (sidebar) sidebar.scrollIntoView({ behavior: "smooth" });
+        return;
+      }
+
+      const ticketId = `PLAT-SV-${Math.floor(10000 + Math.random() * 90000)}`;
+
+      document.getElementById("pass-ticket-id").textContent = ticketId;
+      document.getElementById("pass-visitor-name").textContent = visitorName;
+      document.getElementById("pass-visitor-phone").textContent = visitorPhone;
+      document.getElementById("pass-prop-address").textContent = `${activeProperty.address || activeProperty.locality}, ${activeProperty.city}`;
+      document.getElementById("pass-owner-name").textContent = activeProperty.contact_name || "Direct Owner";
+      document.getElementById("pass-owner-phone").textContent = activeProperty.contact_phone || "Not available";
+      document.getElementById("pass-datetime").textContent = `${selectedVisitDate} at ${selectedVisitTime}`;
+      
+      const badge = document.getElementById("pass-badge-type");
+      if (badge) {
+        badge.textContent = selectedVisitType === "physical" ? "Physical Visit" : "Video Tour";
+        badge.style.background = selectedVisitType === "physical" ? "rgba(16,185,129,0.15)" : "rgba(14,165,233,0.15)";
+        badge.style.color = selectedVisitType === "physical" ? "#10b981" : "#0ea5e9";
+        badge.style.borderColor = selectedVisitType === "physical" ? "rgba(16,185,129,0.3)" : "rgba(14,165,233,0.3)";
+      }
+
+      const barcodeBox = document.getElementById("pass-barcode-lines");
+      if (barcodeBox) {
+        let linesHtml = "";
+        for (let i = 0; i < 35; i++) {
+          const width = Math.random() > 0.45 ? (Math.random() > 0.7 ? 3.5 : 2.0) : 1.0;
+          const space = Math.random() > 0.5 ? 2.5 : 1.5;
+          linesHtml += `<div style="width: ${width}px; margin-right: ${space}px; background: #111;"></div>`;
+        }
+        barcodeBox.innerHTML = linesHtml;
+      }
+
+      const visits = JSON.parse(localStorage.getItem("platlo_site_visits") || "[]");
+      const newVisit = {
+        id: ticketId,
+        property_id: activeProperty.id,
+        property_title: activeProperty.title,
+        visitor_name: visitorName,
+        visitor_phone: visitorPhone,
+        visitor_email: visitorEmail,
+        visit_date: selectedVisitDate,
+        visit_time: selectedVisitTime,
+        visit_type: selectedVisitType,
+        created_at: new Date().toISOString()
+      };
+      visits.push(newVisit);
+      localStorage.setItem("platlo_site_visits", JSON.stringify(visits));
+
+      document.getElementById("visit-pass-modal-overlay").classList.add("active");
+      showToast("Direct Site Visit scheduled successfully!", "success");
+    }
+
+    function printVisitPass() {
+      const content = document.getElementById("visit-pass-print-box").innerHTML;
+      const win = window.open("", "_blank");
+      if (!win) return;
+      win.document.write(`
+        <html>
+          <head>
+            <title>PLATLO Site Visit Pass</title>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 40px; color: #111; line-height: 1.5; background: #fff; }
+              #visit-pass-print-box { max-width: 500px; margin: 0 auto; border: 2px dashed #94a3b8; padding: 25px; border-radius: 8px; background: #f8fafc; position: relative; }
+              table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+              td { padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
+              strong { color: #1e293b; }
+              .stamp { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-20deg); font-size: 40px; font-weight: 900; color: rgba(16, 185, 129, 0.08); border: 8px double rgba(16, 185, 129, 0.08); padding: 10px 20px; border-radius: 8px; text-transform: uppercase; pointer-events: none; white-space: nowrap; font-family: monospace; }
+              .btn { display: none; }
+            </style>
+          </head>
+          <body>
+            <div id="visit-pass-print-box">
+              <div class="stamp">Verified Pass</div>
+              ${content}
+            </div>
+            <script>
+              window.onload = function() { window.print(); }
+            <\/script>
+          </body>
+        </html>
+      `);
+      win.document.close();
+    }
+
+    function closeVisitPassModal() {
+      document.getElementById("visit-pass-modal-overlay").classList.remove("active");
+    }
+
+    // Broker Flagging Report functions
+    function openReportModal() {
+      const overlay = document.getElementById("report-modal-overlay");
+      const form = document.getElementById("report-listing-form");
+      if (overlay && form) {
+        form.reset();
+        overlay.classList.add("active");
+        document.addEventListener("keydown", handleReportEscape);
+      }
+    }
+
+    function closeReportModal() {
+      const overlay = document.getElementById("report-modal-overlay");
+      if (overlay) {
+        overlay.classList.remove("active");
+        document.removeEventListener("keydown", handleReportEscape);
+      }
+    }
+
+    function handleReportEscape(e) {
+      if (e.key === "Escape") closeReportModal();
+    }
+
+    function handleReportSubmit(event) {
+      event.preventDefault();
+      if (!activeProperty) return;
+      
+      const reason = document.getElementById("report-reason").value;
+      const comments = document.getElementById("report-comments").value;
+      
+      const report = {
+        id: "rep-" + Math.random().toString(36).substr(2, 9),
+        property_id: activeProperty.id,
+        phone: activeProperty.contact_phone,
+        reason,
+        comments,
+        created_at: new Date().toISOString()
+      };
+      
+      window.PLATLO_DB.saveReport(report);
+      
+      if (reason === "broker") {
+        window.showToast("Community flag logged! Fraud checks applied to duplicate phone numbers.", "success");
+      } else {
+        window.showToast("Thank you! Listing reported successfully for moderation review.", "success");
+      }
+      
+      closeReportModal();
+      
+      // Reload details to show moderation banners
+      loadPropertyDetails();
+    }
+
+    // Expose functions globally
+    window.switchCalcTab = switchCalcTab;
+    window.recalcLoanEligibility = recalcLoanEligibility;
+    window.openReportModal = openReportModal;
+    window.closeReportModal = closeReportModal;
+    window.handleReportSubmit = handleReportSubmit;
+
+    // Initial Trigger on load
+    document.addEventListener("DOMContentLoaded", () => {
+      // Small timeout to allow Supabase config check
+      setTimeout(loadPropertyDetails, 100);
+    });
+  </script>
+
+  <!-- SITE VISIT PASS MODAL OVERLAY -->
+  <div id="visit-pass-modal-overlay" class="modal-overlay" style="z-index: 1200;">
+    <div class="modal glass" style="max-width: 500px; padding: 0; overflow: hidden; border: 1px solid rgba(255,255,255,0.2);">
+      <div style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin: 0; font-size: 18px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Owner Site-Pass Ticket</h3>
+        <button style="background: none; border: none; font-size: 24px; color: white; cursor: pointer; line-height: 1;" onclick="closeVisitPassModal()">&times;</button>
+      </div>
+      
+      <div id="visit-pass-print-box" style="padding: 24px; background: var(--bg-primary);">
+        <div style="border: 2px dashed var(--border-color); padding: 20px; border-radius: var(--radius-md); background: var(--bg-secondary); position: relative; overflow: hidden;">
+          <div style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-20deg); font-size: 44px; font-weight: 900; color: rgba(16, 185, 129, 0.08); border: 8px double rgba(16, 185, 129, 0.08); padding: 10px 20px; border-radius: 8px; text-transform: uppercase; pointer-events: none; white-space: nowrap; font-family: 'Courier New', Courier, monospace;">
+            Verified Pass
+          </div>
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 15px;">
+            <div>
+              <strong style="color: var(--primary); font-size: 15px; font-family: 'Outfit';">PLATLO Direct Deal</strong>
+              <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-top: 2px;" id="pass-ticket-id">PASS-9821-V</div>
+            </div>
+            <div style="text-align: right;">
+              <span id="pass-badge-type" style="font-size: 9px; font-weight: 800; background: rgba(16,185,129,0.15); color: #10b981; border: 1.5px solid rgba(16,185,129,0.3); padding: 2px 8px; border-radius: var(--radius-sm); text-transform: uppercase;">Physical Visit</span>
+            </div>
+          </div>
+          <table style="width: 100%; font-size: 12.5px; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 6px 0; color: var(--text-muted); width: 35%;">Visitor Name:</td>
+              <td style="padding: 6px 0; font-weight: 700; color: var(--text-primary);" id="pass-visitor-name">John Doe</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: var(--text-muted);">Contact Phone:</td>
+              <td style="padding: 6px 0; font-weight: 700; color: var(--text-primary);" id="pass-visitor-phone">+91 99999 99999</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: var(--text-muted);">Listing Address:</td>
+              <td style="padding: 6px 0; font-weight: 700; color: var(--text-primary);" id="pass-prop-address">Patel Nagar, Orai</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: var(--text-muted);">Owner Name:</td>
+              <td style="padding: 6px 0; font-weight: 700; color: var(--text-primary);" id="pass-owner-name">Amit Mishra</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: var(--text-muted);">Owner Contact:</td>
+              <td style="padding: 6px 0; font-weight: 700; color: var(--text-primary);" id="pass-owner-phone">+91 94530 11223</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: var(--text-muted);">Date & Time:</td>
+              <td style="padding: 6px 0; font-weight: 800; color: var(--primary);" id="pass-datetime">Jun 10, 2026 at 02:00 PM</td>
+            </tr>
+          </table>
+          <div style="display: flex; flex-direction: column; align-items: center; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+            <div style="display: flex; height: 35px; width: 100%; max-width: 200px; background: white; padding: 4px; border: 1px solid #ddd; align-items: stretch; justify-content: center; gap: 2.5px;" id="pass-barcode-lines"></div>
+            <span style="font-size: 8.5px; font-family: monospace; color: var(--text-muted); margin-top: 6px; letter-spacing: 2px;">*PLATLO-PASS-TICKET*</span>
+          </div>
+        </div>
+      </div>
+      <div style="background: var(--bg-tertiary); padding: 16px; display: flex; gap: 10px; border-top: 1px solid var(--border-color);">
+        <button class="btn btn-primary" onclick="printVisitPass()" style="flex: 1; font-weight: 700;">Print Visit Pass</button>
+        <button class="btn btn-secondary" onclick="closeVisitPassModal()" style="flex: 1; font-weight: 700;">Close</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
