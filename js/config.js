@@ -6,7 +6,6 @@ window.PLATLO_CONFIG = {
   // Configured Supabase project URL
   SUPABASE_URL: "https://xikoaxhrqghivmafgexa.supabase.co",
   
-  // NOTE: Replace this placeholder with your actual Supabase Project Anon Key.
-  // Go to: Supabase Dashboard -> Project Settings -> API -> anon public key
-  SUPABASE_ANON_KEY: "YOUR_SUPABASE_ANON_KEY_HERE"
+  // Configured Supabase project Anon Key
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhpa29heGhycWdoaXZtYWZnZXhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMjQyNjgsImV4cCI6MjA5NjYwMDI2OH0.9zlOvTn2EmVcu2it3BuwoPh9CfW-eOr_dOPcT8BWV6E"
 };
